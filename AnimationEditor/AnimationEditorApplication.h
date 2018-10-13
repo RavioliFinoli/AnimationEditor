@@ -16,6 +16,7 @@ public:
 	static ComPtr<ID3D11DeviceContext> gDeviceContext;
 
 	bool LoadSkeletonFilesInDirectory(std::string dir);
+	bool LoadAnimationFilesInDirectory(std::string dir);
 private:
 	AE::AnimationHandler m_handler;
 };
