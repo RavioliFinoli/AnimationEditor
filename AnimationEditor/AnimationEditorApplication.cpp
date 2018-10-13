@@ -11,3 +11,8 @@ AnimationEditorApplication::AnimationEditorApplication()
 AnimationEditorApplication::~AnimationEditorApplication()
 {
 }
+
+bool AnimationEditorApplication::LoadSkeletonFilesInDirectory(std::string dir)
+{
+
+}

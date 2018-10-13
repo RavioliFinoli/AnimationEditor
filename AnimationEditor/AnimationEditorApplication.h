@@ -2,6 +2,8 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <wrl.h>
+#include "Animation.h"
+#include "Helpers.h"
 using Microsoft::WRL::ComPtr;
 
 class AnimationEditorApplication
@@ -12,7 +14,9 @@ public:
 
 	static ComPtr<ID3D11Device> gDevice;
 	static ComPtr<ID3D11DeviceContext> gDeviceContext;
-private:
 
+	bool LoadSkeletonFilesInDirectory(std::string dir);
+private:
+	AE::AnimationHandler m_handler;
 };
 
