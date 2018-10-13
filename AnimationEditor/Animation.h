@@ -4,15 +4,16 @@
 #include <string>
 #include <d3d11.h>
 #include <unordered_map>
+#include "../AnimationModule/src/AnimationModule.h"
 
 namespace AE
 {
 #pragma region AnimationClip
-	struct AnimationData;
 	struct SkeletonData;
-	typedef std::shared_ptr<SkeletonData> SharedSkeleton;
+	typedef std::shared_ptr<Animation::Skeleton> SharedSkeleton;
 	class DifferenceClip;
 	class BakedClip;
+	typedef std::shared_ptr<Animation::AnimationClip> SharedAnimationData;
 
 	class AnimationClip : std::enable_shared_from_this<AnimationClip>
 	{
@@ -22,13 +23,14 @@ namespace AE
 
 		void SetSpeed(float speed);
 		void SetMask(float maskValue, uint32_t jointIndex);
-		void SetSkeleton(std::shared_ptr<SkeletonData> skeleton);
+		void SetSkeleton(SharedSkeleton skeleton);
+		void SetAnimationData(SharedAnimationData animationData);
 
 		std::shared_ptr<DifferenceClip> AsDifferenceClip();
 		std::shared_ptr<BakedClip> AsBakedClip();
 	private:
-		std::shared_ptr<AnimationData> m_animationData = nullptr;
-		std::shared_ptr<SkeletonData> m_skeletonData = nullptr;
+		std::shared_ptr<Animation::AnimationClip> m_animationData = nullptr;
+		std::shared_ptr<Animation::Skeleton> m_skeletonData = nullptr;
 		std::vector<float> m_jointMask;
 		float m_animationSpeed = 1.0f;
 	};
@@ -64,7 +66,7 @@ namespace AE
 #pragma region AnimationHandler
 
 	typedef std::unordered_map<std::string, std::shared_ptr<AnimationClip>> AnimationMap;
-	typedef std::unordered_map<std::string, std::shared_ptr<SkeletonData>> SkeletonMap;
+	typedef std::unordered_map<std::string, SharedSkeleton> SkeletonMap;
 
 	enum class ANIMATION_TYPE : uint8_t
 	{
@@ -80,7 +82,7 @@ namespace AE
 		AnimationHandler();
 		~AnimationHandler();
 
-		bool loadAnimation(std::string file, std::string name, ANIMATION_TYPE type = ANIMATION_TYPE::AUTO);
+		bool loadAnimation(std::string file, std::string name, ANIMATION_TYPE type, SharedSkeleton skeleton);
 		bool loadSkeleton(std::string file, std::string name);
 
 		SharedAnimationClip getRawClip(std::string key);
