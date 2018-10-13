@@ -18,7 +18,7 @@ namespace AE
 	{
 	public:
 		AnimationClip();
-		~AnimationClip();
+		virtual ~AnimationClip();
 
 		void SetSpeed(float speed);
 		void SetMask(float maskValue, uint32_t jointIndex);
@@ -40,7 +40,7 @@ namespace AE
 	{
 	public:
 		DifferenceClip();
-		~DifferenceClip();
+		virtual ~DifferenceClip();
 	private:
 		float m_blendWeight = 1.0;
 		std::shared_ptr<AnimationClip> m_originalSource = nullptr;
@@ -52,7 +52,7 @@ namespace AE
 	{
 	public:
 		BakedClip();
-		~BakedClip();
+		virtual ~BakedClip();
 
 	private:
 		float m_bakedWeight = 1.0;
