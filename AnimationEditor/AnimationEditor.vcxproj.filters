@@ -19,6 +19,9 @@
     <Filter Include="Header Files\Rendering">
       <UniqueIdentifier>{e66f1b6f-02da-44f2-a20a-5101b084c13a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Misc">
+      <UniqueIdentifier>{1c4edab1-fbb6-49cb-8448-d8c8c447b833}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp">
@@ -33,6 +36,9 @@
     <ClCompile Include="ConstantBuffer.cpp">
       <Filter>Header Files\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Helpers.cpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -43,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="AnimationEditorApplication.h">
       <Filter>Header Files\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
+      <Filter>Header Files\Misc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
