@@ -6,6 +6,7 @@
 int main()
 {
 	AnimationEditorApplication app;
-	
+	app.LoadSkeletonFilesInDirectory("C:\\Repos\\AnimationEditor\\Assets");
+	app.LoadAnimationFilesInDirectory("Assets/");
 	return 0;
 }
