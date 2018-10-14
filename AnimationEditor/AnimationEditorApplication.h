@@ -5,6 +5,7 @@
 #include "Animation.h"
 #include "Helpers.h"
 #include "GraphicsHandler.h"
+#include "Camera.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -31,6 +32,8 @@ public:
 private:
 	AE::AnimationHandler m_AnimationHandler;
 	AE::GraphicsHandler m_ModelHandler;
+
+	Camera m_Camera;
 };
 
 typedef AnimationEditorApplication AEApp;
