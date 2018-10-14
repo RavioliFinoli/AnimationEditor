@@ -167,6 +167,7 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationEditorApplication.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="GraphicsHandler.cpp" />
     <ClCompile Include="Helpers.cpp" />
@@ -177,6 +178,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AnimationEditorApplication.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="GraphicsHandler.h" />
     <ClInclude Include="Helpers.h" />
