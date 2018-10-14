@@ -82,6 +82,13 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 
 	SetViewport();
 	m_ModelHandler.Init();
+
+	///Init cbuffers
+	m_PerFrameBuffer          = std::make_unique<ConstantBuffer>(0, sizeof(PerFrameData));
+	m_PerStaticObjectBuffer   = std::make_unique<ConstantBuffer>(1, sizeof(PerStaticObjectData));
+	m_PerAnimatedObjectBuffer = std::make_unique<ConstantBuffer>(1, sizeof(PerAnimatedObjectData));
+
+
 	return hr;
 }
 

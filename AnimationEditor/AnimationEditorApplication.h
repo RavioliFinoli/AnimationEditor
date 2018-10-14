@@ -6,8 +6,27 @@
 #include "Helpers.h"
 #include "GraphicsHandler.h"
 #include "Camera.h"
+#include "ConstantBuffer.h"
 
 using Microsoft::WRL::ComPtr;
+const uint16_t MAX_JOINTS = 128;
+
+struct PerFrameData 
+{
+	DirectX::XMFLOAT4X4A viewProjectionMatrix = {};
+	DirectX::XMFLOAT4A cameraPosition = {};
+};
+
+struct PerStaticObjectData
+{
+	DirectX::XMFLOAT4X4A worldMatrix = {};
+};
+
+struct PerAnimatedObjectData
+{
+	DirectX::XMFLOAT4X4A worldMatrix = {};
+	DirectX::XMFLOAT4X4A skinningMatrices[MAX_JOINTS];
+};
 
 class AnimationEditorApplication
 {
@@ -34,6 +53,10 @@ private:
 	AE::GraphicsHandler m_ModelHandler;
 
 	Camera m_Camera;
+
+	std::unique_ptr<ConstantBuffer> m_PerFrameBuffer;
+	std::unique_ptr<ConstantBuffer> m_PerStaticObjectBuffer;
+	std::unique_ptr<ConstantBuffer> m_PerAnimatedObjectBuffer;
 };
 
 typedef AnimationEditorApplication AEApp;
