@@ -3,14 +3,19 @@
 #include <vector>
 #include <string>
 #include <d3d11.h>
+#include <wrl.h>
 #include <unordered_map>
 #include "../AnimationModule/src/AnimationModule.h"
+
+using Microsoft::WRL::ComPtr;
+
 
 namespace AE
 {
 #pragma region AnimationClip
-	struct SkeletonData;
+	
 	typedef std::shared_ptr<Animation::Skeleton> SharedSkeleton;
+	typedef SharedSkeleton SharedSkeletonData;
 	class DifferenceClip;
 	class BakedClip;
 	typedef std::shared_ptr<Animation::AnimationClip> SharedAnimationData;
@@ -29,13 +34,13 @@ namespace AE
 		std::shared_ptr<DifferenceClip> AsDifferenceClip();
 		std::shared_ptr<BakedClip> AsBakedClip();
 	private:
-		std::shared_ptr<Animation::AnimationClip> m_animationData = nullptr;
-		std::shared_ptr<Animation::Skeleton> m_skeletonData = nullptr;
-		std::vector<float> m_jointMask;
-		float m_animationSpeed = 1.0f;
+		SharedAnimationData m_AnimationData = nullptr;
+		SharedSkeletonData m_SkeletonData = nullptr;
+		std::vector<float> m_JointMask;
+		float m_AnimationSpeed = 1.0f;
 	};
 
-	typedef std::shared_ptr<AnimationClip> SharedAnimationClip;
+	
 	typedef AnimationClip RawClip;
 
 	class DifferenceClip : public AnimationClip
@@ -44,9 +49,9 @@ namespace AE
 		DifferenceClip();
 		virtual ~DifferenceClip();
 	private:
-		float m_blendWeight = 1.0;
-		std::shared_ptr<AnimationClip> m_originalSource = nullptr;
-		std::shared_ptr<AnimationClip> m_originalReference = nullptr;
+		float m_BlendWeight = 1.0;
+		std::shared_ptr<AnimationClip> m_OriginalSource = nullptr;
+		std::shared_ptr<AnimationClip> m_OriginalReference = nullptr;
 
 	};
 
@@ -57,10 +62,12 @@ namespace AE
 		virtual ~BakedClip();
 
 	private:
-		float m_bakedWeight = 1.0;
-		std::shared_ptr<AnimationClip> m_originalClip = nullptr;
-		std::shared_ptr<AnimationClip> m_originalDifferenceClip = nullptr;
+		float m_BakedWeight = 1.0;
+		std::shared_ptr<AnimationClip> m_OriginalClip = nullptr;
+		std::shared_ptr<AnimationClip> m_OriginalDifferenceClip = nullptr;
 	};
+
+	typedef std::shared_ptr<AE::AnimationClip> SharedAnimationClip;
 #pragma endregion AnimationClip base and derived
 
 #pragma region AnimationHandler
@@ -82,18 +89,20 @@ namespace AE
 		AnimationHandler();
 		~AnimationHandler();
 
-		bool loadAnimation(std::string file, std::string name, ANIMATION_TYPE type, SharedSkeleton skeleton);
-		bool loadSkeleton(std::string file, std::string name);
+		bool LoadAnimation(std::string file, std::string name, ANIMATION_TYPE type, SharedSkeleton skeleton);
+		bool LoadSkeleton(std::string file, std::string name);
 
-		SharedAnimationClip getRawClip(std::string key);
-		SharedAnimationClip getDifferenceClip(std::string key);
-		SharedAnimationClip getBakedClip(std::string key);
+		SharedAnimationClip GetRawClip(std::string key);
+		SharedAnimationClip GetDifferenceClip(std::string key);
+		SharedAnimationClip GetBakedClip(std::string key);
 		
 	private:
-		AnimationMap m_rawClips;
-		AnimationMap m_differenceClips;
-		AnimationMap m_bakedClips;
-		SkeletonMap  m_skeletons;
+		AnimationMap m_RawClips;
+		AnimationMap m_DifferenceClips;
+		AnimationMap m_BakedClips;
+		SkeletonMap  m_Skeletons;
 	};
+
+
 #pragma endregion AnimationClip and Skeleton handler
 }

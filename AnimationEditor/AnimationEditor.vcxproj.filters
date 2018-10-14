@@ -39,6 +39,15 @@
     <ClCompile Include="Helpers.cpp">
       <Filter>Header Files\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="StaticModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -53,5 +62,18 @@
     <ClInclude Include="Helpers.h">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
+    <ClInclude Include="StaticModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="BasicVS.hlsl" />
+    <FxCompile Include="BasicPS.hlsl" />
   </ItemGroup>
 </Project>

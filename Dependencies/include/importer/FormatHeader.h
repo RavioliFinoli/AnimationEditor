@@ -114,7 +114,6 @@ namespace MyLibrary
 	{
 		unsigned int mesh_nrOfVertices;
 		char mesh_meshID[MAX_FILENAME];
-		//unsigned int mesh_materialID;
 		VertexFromFile* mesh_vertices;
 	};
 

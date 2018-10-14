@@ -9,7 +9,7 @@ AE::AnimationHandler::~AnimationHandler()
 
 }
 
-bool AE::AnimationHandler::loadAnimation(std::string file, std::string name, ANIMATION_TYPE type, SharedSkeleton skeleton)
+bool AE::AnimationHandler::LoadAnimation(std::string file, std::string name, ANIMATION_TYPE type, SharedSkeleton skeleton)
 {
 	auto animation = Animation::LoadAndCreateAnimation(file, skeleton);
 
@@ -23,34 +23,34 @@ bool AE::AnimationHandler::loadAnimation(std::string file, std::string name, ANI
 	case AE::ANIMATION_TYPE::AUTO:
 		break;
 	case AE::ANIMATION_TYPE::RAW_CLIP:
-		m_rawClips.insert(std::make_pair(name, clip));
+		m_RawClips.insert(std::make_pair(name, clip));
 		break;
 	case AE::ANIMATION_TYPE::DIFFERENCE_CLIP:
-		m_differenceClips.insert(std::make_pair(name, clip));
+		m_DifferenceClips.insert(std::make_pair(name, clip));
 		break;
 	case AE::ANIMATION_TYPE::BAKED_CLIP:
-		m_bakedClips.insert(std::make_pair(name, clip));
+		m_BakedClips.insert(std::make_pair(name, clip));
 		break;
 	default:
-		m_rawClips.insert(std::make_pair(name, clip));
+		m_RawClips.insert(std::make_pair(name, clip));
 		break;
 	}
 	return true;
 }
 
-bool AE::AnimationHandler::loadSkeleton(std::string file, std::string name)
+bool AE::AnimationHandler::LoadSkeleton(std::string file, std::string name)
 {
 	auto skeleton = Animation::LoadAndCreateSkeleton(file);
-	m_skeletons.insert(std::make_pair(name, skeleton));
+	m_Skeletons.insert(std::make_pair(name, skeleton));
 	return true;
 }
 
-AE::SharedAnimationClip AE::AnimationHandler::getRawClip(std::string key)
+AE::SharedAnimationClip AE::AnimationHandler::GetRawClip(std::string key)
 {
 	SharedAnimationClip clip = nullptr;
 	try
 	{
-		clip = m_rawClips.at(key);
+		clip = m_RawClips.at(key);
 	}
 	catch (std::out_of_range oor)
 	{
@@ -59,12 +59,12 @@ AE::SharedAnimationClip AE::AnimationHandler::getRawClip(std::string key)
 	return clip;
 }
 
-AE::SharedAnimationClip AE::AnimationHandler::getDifferenceClip(std::string key)
+AE::SharedAnimationClip AE::AnimationHandler::GetDifferenceClip(std::string key)
 {
 	SharedAnimationClip clip = nullptr;
 	try
 	{
-		clip = m_differenceClips.at(key);
+		clip = m_DifferenceClips.at(key);
 	}
 	catch (std::out_of_range oor)
 	{
@@ -73,12 +73,12 @@ AE::SharedAnimationClip AE::AnimationHandler::getDifferenceClip(std::string key)
 	return clip;
 }
 
-AE::SharedAnimationClip AE::AnimationHandler::getBakedClip(std::string key)
+AE::SharedAnimationClip AE::AnimationHandler::GetBakedClip(std::string key)
 {
 	SharedAnimationClip clip = nullptr;
 	try
 	{
-		clip = m_bakedClips.at(key);
+		clip = m_BakedClips.at(key);
 	}
 	catch (std::out_of_range oor)
 	{
@@ -96,22 +96,22 @@ AE::AnimationClip::~AnimationClip()
 
 void AE::AnimationClip::SetSpeed(float speed)
 {
-	m_animationSpeed = speed;
+	m_AnimationSpeed = speed;
 }
 
 void AE::AnimationClip::SetMask(float maskValue, uint32_t jointIndex)
 {
-	m_jointMask.at(jointIndex) = maskValue;
+	m_JointMask.at(jointIndex) = maskValue;
 }
 
 void AE::AnimationClip::SetSkeleton(SharedSkeleton skeleton)
 {
-	m_skeletonData = skeleton;
+	m_SkeletonData = skeleton;
 }
 
 void AE::AnimationClip::SetAnimationData(SharedAnimationData animationData)
 {
-	m_animationData = animationData;
+	m_AnimationData = animationData;
 }
 
 std::shared_ptr<AE::DifferenceClip> AE::AnimationClip::AsDifferenceClip()
@@ -123,3 +123,4 @@ std::shared_ptr<AE::BakedClip> AE::AnimationClip::AsBakedClip()
 {
 	return std::dynamic_pointer_cast<AE::BakedClip>(shared_from_this());
 }
+

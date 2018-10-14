@@ -13,8 +13,7 @@ DirectX::XMMATRIX Animation::_createMatrixFromSRT(const SRT& srt)
 	auto translationMatrix = XMMatrixTranslationFromVector(XMLoadFloat4A(&fTranslation));
 	auto rotationMatrix = XMMatrixRotationQuaternion(XMLoadFloat4A(&fRotation));
 	auto scaleMatrix = XMMatrixScalingFromVector(XMLoadFloat4A(&fScale));
-	
-	//return XMMatrixMultiply(rotationMatrix, translationMatrix); // #todo test/make sure we dont need this
+
 	return XMMatrixAffineTransformation(XMLoadFloat4A(&fScale), { 0.0, 0.0, 0.0, 1.0 }, XMLoadFloat4A(&fRotation), XMLoadFloat4A(&fTranslation));
 }
 
@@ -30,13 +29,9 @@ DirectX::XMMATRIX Animation::_createMatrixFromSRT(const MyLibrary::DecomposedTra
 	auto r = XMMatrixRotationQuaternion(XMLoadFloat4A(&fRotation));
 	auto s = XMMatrixScalingFromVector(XMLoadFloat4A(&fTranslation));
 
-	// #NEWCHECK
-	//return XMMatrixMultiply(t, r);
-
 	return XMMatrixAffineTransformation(XMLoadFloat4A(&fScale), { 0.0f, 0.0f, 0.0f, 1.0f }, XMLoadFloat4A(&fRotation), XMLoadFloat4A(&fTranslation));
 }
 
-// #todo rename
 std::shared_ptr<Animation::AnimationClip> Animation::LoadAndCreateAnimation(std::string file, std::shared_ptr<Animation::Skeleton> skeleton)
 {
 	MyLibrary::Loadera loader;
@@ -45,7 +40,6 @@ std::shared_ptr<Animation::AnimationClip> Animation::LoadAndCreateAnimation(std:
 	return std::make_shared<Animation::AnimationClip>(importedAnimation, skeleton);
 }
 
-// #todo rename
 std::shared_ptr<Animation::Skeleton> Animation::LoadAndCreateSkeleton(std::string file)
 {
 	MyLibrary::Loadera loader;
@@ -53,7 +47,6 @@ std::shared_ptr<Animation::Skeleton> Animation::LoadAndCreateSkeleton(std::strin
 	return std::make_shared<Animation::Skeleton>(importedSkeleton);
 }
 
-// #convert Transform conversion
 Animation::SRT Animation::ConvertTransformToSRT(MyLibrary::Transform transform)
 {
 	using namespace DirectX;
@@ -71,7 +64,6 @@ Animation::SRT Animation::ConvertTransformToSRT(MyLibrary::Transform transform)
 	return srt;
 }
 
-// #convert #animationclip AnimationClip conversion
 Animation::AnimationClip* Animation::ConvertToAnimationClip(MyLibrary::AnimationFromFile* animation, uint8_t jointCount)
 {
 	uint32_t keyCount = animation->nr_of_keyframes;
@@ -101,7 +93,6 @@ Animation::AnimationClip* Animation::ConvertToAnimationClip(MyLibrary::Animation
 	return clipToReturn;
 }
 
-// #bindpose
 void Animation::SetInverseBindPoses(Animation::Skeleton* mainSkeleton, const MyLibrary::Skeleton* importedSkeleton)
 {
 	using namespace DirectX;
