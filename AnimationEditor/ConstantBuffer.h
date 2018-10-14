@@ -13,7 +13,8 @@ public:
 	~ConstantBuffer();
 
 	void SetData(PVOID64 data);
-	void Bind();
+	void BindToVertexShader();
+	void BindToPixelShader();
 private:
 	uint8_t m_bufferSlot = 0;
 	size_t m_size = 0;
