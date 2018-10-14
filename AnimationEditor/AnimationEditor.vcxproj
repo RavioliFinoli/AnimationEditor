@@ -167,9 +167,11 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationEditorApplication.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="GraphicsHandler.cpp" />
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="StaticModel.cpp" />
@@ -177,9 +179,11 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AnimationEditorApplication.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="GraphicsHandler.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="InputHandler.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="StaticModel.h" />
   </ItemGroup>
