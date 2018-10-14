@@ -1,12 +1,12 @@
 #include "Camera.h"
 
-const DirectX::XMFLOAT4A default_forward = { 0.0f, 1.0f, 0.0f, 0.0f };
+const DirectX::XMFLOAT4A default_forward = { 0.0f, 0.0, 1.0f, 0.0f };
 const DirectX::XMFLOAT4A default_right = { 1.0f, 0.0f, 0.0f, 0.0f };
 
 Camera::Camera()
 {
 	using namespace DirectX;
-	XMStoreFloat4x4A(&m_ViewProjectionMatrix, XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, 1.77777777778f, 0.1f, 100.0f));
+	XMStoreFloat4x4A(&m_ProjectionMatrix, XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, 1.33333333333f, 0.1f, 100.0f));
 }
 
 
@@ -65,6 +65,16 @@ float Camera::GetYaw()
 	return m_Yaw;
 }
 
+DirectX::XMFLOAT4X4A Camera::GetProjectionMatrix()
+{
+	return m_ProjectionMatrix;
+}
+
+DirectX::XMFLOAT4A Camera::GetPosition()
+{
+	return m_CameraPosition;
+}
+
 void Camera::_constructCameraOrientation()
 {
 	using namespace DirectX;
@@ -73,10 +83,11 @@ void Camera::_constructCameraOrientation()
 
 void Camera::_constructViewMatrix()
 {
+	m_CameraPosition.w = 1.0f;
 	using namespace DirectX;
 	_constructCameraOrientation();
 	XMVECTOR lookAtPosition;
-	lookAtPosition = XMVectorAdd(XMLoadFloat4A(&m_CameraPosition), XMVector4Transform(XMLoadFloat4A(&default_forward), XMMatrixIdentity()));
+	lookAtPosition = XMVectorAdd(XMLoadFloat4A(&m_CameraPosition), XMVector4Transform(XMLoadFloat4A(&default_forward), XMLoadFloat4x4A(&m_CameraOrientation)));
 	XMMATRIX viewMatrix = XMMatrixLookAtLH(XMLoadFloat4A(&m_CameraPosition), lookAtPosition, {0.0f, 1.0f, 0.0f, 0.0f});
 	XMStoreFloat4x4A(&m_ViewMatrix, viewMatrix);
 }

@@ -116,10 +116,21 @@ void AnimationEditorApplication::Render()
 	gDeviceContext->PSSetShader(m_ModelHandler.GetPixelShader().Get(), nullptr, 0);
 
 	gDeviceContext->IASetInputLayout(m_ModelHandler.GetStaticModelInputLayout().Get());
+	m_Camera.IncreasePitchYaw(0.0f, 0.0001f);
+	PerFrameData pf = {};
+	pf.viewProjectionMatrix = m_Camera.GetViewProjectionMatrix();
+	pf.cameraPosition = m_Camera.GetPosition();
+
+	m_PerFrameBuffer->SetData(&pf);
+	m_PerFrameBuffer->BindToVertexShader();
 	UINT32 vertexSize = sizeof(float) * 11;
 	UINT32 offset = 0;
 	for (auto& model : staticModels)
 	{
+		PerStaticObjectData pso = {};
+		pso.worldMatrix = model.second->GetWorldMatrix();
+		m_PerStaticObjectBuffer->SetData(&pso);
+		m_PerStaticObjectBuffer->BindToVertexShader();
 		auto buffer = model.second->GetVertexBuffer();
 		auto vertexCount = model.second->GetVertexCount();
 

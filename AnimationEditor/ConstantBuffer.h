@@ -19,6 +19,9 @@ private:
 	uint8_t m_bufferSlot = 0;
 	size_t m_size = 0;
 	ComPtr<ID3D11Buffer> m_buffer = nullptr;
+	D3D11_MAPPED_SUBRESOURCE m_Subresource;
 	std::unique_ptr<BYTE[]> m_data;
+	void _update();
+	void _createBuffer();
 };
 

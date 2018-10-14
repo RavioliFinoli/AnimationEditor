@@ -15,9 +15,12 @@ public:
 	void SetYaw(float yaw);
 
 	std::pair<float, float> GetPitchYaw();
+	DirectX::XMFLOAT4A GetPosition();
 	float GetPitch();
 	float GetYaw();
 
+
+	DirectX::XMFLOAT4X4A GetProjectionMatrix();
 private:
 	DirectX::XMFLOAT4X4A m_ViewProjectionMatrix = {};
 	DirectX::XMFLOAT4X4A m_ProjectionMatrix     = {};
