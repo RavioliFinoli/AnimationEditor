@@ -57,6 +57,8 @@ private:
 	std::unique_ptr<ConstantBuffer> m_PerFrameBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerStaticObjectBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerAnimatedObjectBuffer;
+public:
+	Camera* GetCamera();
 };
 
 typedef AnimationEditorApplication AEApp;

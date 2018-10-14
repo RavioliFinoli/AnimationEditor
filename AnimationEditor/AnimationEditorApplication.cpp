@@ -185,3 +185,8 @@ bool AnimationEditorApplication::LoadAnimatedMeshFilesInDirectory(std::string di
 	return false;
 }
 
+Camera* AnimationEditorApplication::GetCamera()
+{
+	return &m_Camera;
+}
+
