@@ -46,7 +46,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	if (wndHandle)
 	{
-		
 		ShowWindow(wndHandle, nCmdShow);
 
 		while (WM_QUIT != msg.message)
@@ -58,8 +57,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			}
 			else
 			{
-				app.Render(); //8. Rendera
-				app.Present(); //9. V�xla front- och back-buffer
+				app.Render();
+				app.Present();
 			}
 		}
 
