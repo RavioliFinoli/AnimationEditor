@@ -46,8 +46,9 @@ public:
 	static ComPtr<IDXGISwapChain> gSwapChain;
 	static ComPtr<ID3D11RenderTargetView> gBackbufferRTV;
 	static std::vector<std::string> gStaticMeshNames;
-	bool LoadSkeletonFilesInDirectory(std::string dir);
-	bool LoadAnimationFilesInDirectory(std::string dir);
+	bool LoadAssetsInDirectory(std::string dir);
+	AE::SharedSkeleton LoadSkeletonFilesInDirectory(std::string dir);
+	bool LoadAnimationFilesInDirectory(std::string dir, AE::SharedSkeleton skeleton);
 	bool LoadStaticMeshFilesInDirectory(std::string dir);
 	bool LoadAnimatedMeshFilesInDirectory(std::string dir);
 private:

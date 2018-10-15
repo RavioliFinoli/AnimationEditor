@@ -10,6 +10,7 @@ ComPtr<IDXGISwapChain> AnimationEditorApplication::gSwapChain = nullptr;
 ComPtr<ID3D11RenderTargetView> AnimationEditorApplication::gBackbufferRTV = nullptr;
 std::vector<std::string> AnimationEditorApplication::gStaticMeshNames;
 
+
 HRESULT CreateDirect3DContext(HWND wndHandle)
 {
 	// create a struct to hold information about the swap chain
@@ -93,7 +94,7 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 
 	return hr;
 }
-
+//#GUI
 #pragma region "ImGui"
 void AnimationEditorApplication::DoGui()
 {
@@ -201,7 +202,16 @@ void AnimationEditorApplication::Present()
 	gSwapChain->Present(0, 0);
 }
 
-bool AnimationEditorApplication::LoadSkeletonFilesInDirectory(std::string dir)
+bool AnimationEditorApplication::LoadAssetsInDirectory(std::string dir)
+{
+	auto firstSkeletonFound = LoadSkeletonFilesInDirectory(dir);
+	LoadAnimationFilesInDirectory(dir, firstSkeletonFound);
+	LoadAnimatedMeshFilesInDirectory(dir);
+	LoadStaticMeshFilesInDirectory(dir);
+	return true; //#todo
+}
+
+AE::SharedSkeleton AnimationEditorApplication::LoadSkeletonFilesInDirectory(std::string dir)
 {
 	using namespace Animation;
 
@@ -210,11 +220,19 @@ bool AnimationEditorApplication::LoadSkeletonFilesInDirectory(std::string dir)
 	for (const auto& i : dirsAndFileNames)
 		m_AnimationHandler.LoadSkeleton(i.first, i.second);
 
-	return false;
+	if (dirsAndFileNames.size())
+		return m_AnimationHandler.GetSkeleton(dirsAndFileNames[0].second);
+	else
+		return AE::SharedSkeleton();
 }
 
-bool AnimationEditorApplication::LoadAnimationFilesInDirectory(std::string dir)
+bool AnimationEditorApplication::LoadAnimationFilesInDirectory(std::string dir, AE::SharedSkeleton skeleton)
 {
+	auto dirsAndFileNames = GetPathsAndNamesToFilesMatching("ANIMATION", dir);
+	for (const auto& i : dirsAndFileNames)
+	{
+		m_AnimationHandler.LoadAnimation(i.first, i.second, AE::ANIMATION_TYPE::RAW_CLIP, skeleton);
+	}
 	return false;
 }
 
@@ -232,6 +250,10 @@ bool AnimationEditorApplication::LoadStaticMeshFilesInDirectory(std::string dir)
 bool AnimationEditorApplication::LoadAnimatedMeshFilesInDirectory(std::string dir)
 {
 	auto dirsAndFileNames = GetPathsAndNamesToFilesMatching("ANIMATED", dir);
+	for (const auto& i : dirsAndFileNames)
+	{
+		m_ModelHandler.LoadAnimatedModel(i.first, i.second);
+	}
 	return false;
 }
 

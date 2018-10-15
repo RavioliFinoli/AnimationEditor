@@ -87,6 +87,11 @@ AE::SharedAnimationClip AE::AnimationHandler::GetBakedClip(std::string key)
 	return clip;
 }
 
+AE::SharedSkeleton AE::AnimationHandler::GetSkeleton(std::string key)
+{
+	return m_Skeletons.at(key);
+}
+
 AE::AnimationClip::AnimationClip()
 {
 }
@@ -123,4 +128,3 @@ std::shared_ptr<AE::BakedClip> AE::AnimationClip::AsBakedClip()
 {
 	return std::dynamic_pointer_cast<AE::BakedClip>(shared_from_this());
 }
-

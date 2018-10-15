@@ -1,4 +1,4 @@
-﻿
+
 #include "importer/FormatHeader.h"
 #include "importer/FormatImporter.h"
 #include "AnimationEditorApplication.h"
@@ -34,7 +34,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	AnimationEditorApplication app;
 	app.Init(wndHandle);
-	app.LoadStaticMeshFilesInDirectory("C:\\Repos\\AnimationEditor\\Assets");
+	app.LoadAssetsInDirectory("C:\\Repos\\AnimationEditor\\Assets");
+
 	pCamera = app.GetCamera();
 	//init mouse
 	{

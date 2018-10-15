@@ -96,6 +96,7 @@ namespace AE
 		SharedAnimationClip GetDifferenceClip(std::string key);
 		SharedAnimationClip GetBakedClip(std::string key);
 		
+		AE::SharedSkeleton GetSkeleton(std::string key);
 	private:
 		AnimationMap m_RawClips;
 		AnimationMap m_DifferenceClips;
@@ -103,6 +104,18 @@ namespace AE
 		SkeletonMap  m_Skeletons;
 	};
 
+	struct AnimationClipPlaybackData
+	{
+		AE::SharedAnimationClip clip = nullptr;
+		uint32_t frameCount = 0;
+		uint16_t currentFrame = 0;
+		uint8_t frameRate = 24;
+		float speedScale = 1.0f;
+		float currentTime = 0.0f;
+		bool isPlaying = true;
+		bool isLooping = true;
+	};
 
+	typedef AnimationClipPlaybackData PlaybackData;
 #pragma endregion AnimationClip and Skeleton handler
 }
