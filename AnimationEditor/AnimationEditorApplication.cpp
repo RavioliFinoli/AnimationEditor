@@ -172,13 +172,19 @@ void AnimationEditorApplication::DoGui()
 		}
 		if (ImGui::Button("Set Skeleton"))
 		{
-			auto skeleton = m_AnimationHandler.GetSkeleton(item_current_skeleton);
-			m_AnimationHandler.GetRawClip(item_current_animation)->SetSkeleton(skeleton);
+			if (item_current_skeleton != "None selected")
+			{
+				auto skeleton = m_AnimationHandler.GetSkeleton(item_current_skeleton);
+				m_AnimationHandler.GetRawClip(item_current_animation)->SetSkeleton(skeleton);
+			}
 		}
 		if (ImGui::Button("Set Animation"))
 		{
-			auto animation = m_AnimationHandler.GetRawClip(item_current_animation);
-			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(animation);
+			if (item_current_animation != "None selected")
+			{
+				auto animation = m_AnimationHandler.GetRawClip(item_current_animation);
+				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(animation);
+			}
 		}
 		ImGui::End();
 		static bool poo = true;

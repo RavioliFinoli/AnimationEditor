@@ -7,7 +7,7 @@ Camera::Camera()
 {
 	using namespace DirectX;
 	XMStoreFloat4x4A(&m_ProjectionMatrix, XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4 * 1.5f, 1.7777777f, 0.1f, 100.0f));
-	m_CameraPosition = { 0.0f, 0.0, -4.0f, 1.0f };
+	m_CameraPosition = { 0.0f, 3.0, -8.0f, 1.0f };
 }
 
 
