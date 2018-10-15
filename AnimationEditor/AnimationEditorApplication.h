@@ -11,6 +11,12 @@
 using Microsoft::WRL::ComPtr;
 const uint16_t MAX_JOINTS = 128;
 
+extern Camera gCamera;
+extern std::vector<std::string> gStaticMeshNames;
+extern std::vector<std::string> gAnimatedMeshNames;
+extern std::vector<std::string> gAnimationClipNames;
+extern std::vector<std::string> gSkeletonNames;
+
 struct PerFrameData 
 {
 	DirectX::XMFLOAT4X4A viewProjectionMatrix = {};
@@ -45,7 +51,6 @@ public:
 	static ComPtr<ID3D11DeviceContext> gDeviceContext;
 	static ComPtr<IDXGISwapChain> gSwapChain;
 	static ComPtr<ID3D11RenderTargetView> gBackbufferRTV;
-	static std::vector<std::string> gStaticMeshNames;
 	bool LoadAssetsInDirectory(std::string dir);
 	AE::SharedSkeleton LoadSkeletonFilesInDirectory(std::string dir);
 	bool LoadAnimationFilesInDirectory(std::string dir, AE::SharedSkeleton skeleton);
@@ -55,14 +60,10 @@ private:
 	AE::AnimationHandler m_AnimationHandler;
 	AE::GraphicsHandler m_ModelHandler;
 
-	Camera m_Camera;
-
-
 	std::unique_ptr<ConstantBuffer> m_PerFrameBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerStaticObjectBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerAnimatedObjectBuffer;
 public:
-	Camera* GetCamera();
 };
 
 typedef AnimationEditorApplication AEApp;

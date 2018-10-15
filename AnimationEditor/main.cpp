@@ -5,6 +5,8 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_win32.h"
 #include "ImGui/imgui_impl_dx11.h"
+#include "InputHandler.h"
+#include "WINUSER.h"
 #ifndef UNICODE
 #define UNICODE
 #endif 
@@ -25,18 +27,19 @@
 HWND InitWindow(HINSTANCE hInstance);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-Camera* pCamera = nullptr;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	MSG msg = { 0 };
-	HWND wndHandle = InitWindow(hInstance); //1. Skapa f�nster
+	HWND wndHandle = InitWindow(hInstance);
 
 	AnimationEditorApplication app;
-	app.Init(wndHandle);
-	app.LoadAssetsInDirectory("C:\\Repos\\AnimationEditor\\Assets");
 
-	pCamera = app.GetCamera();
+	app.Init(wndHandle);
+
+	app.LoadAssetsInDirectory("C:\\Repos\\AnimationEditor\\Assets\\CYL_BENDFOLDER");
+	
 	//init mouse
 	{
 		RAWINPUTDEVICE Rid[1];
@@ -46,6 +49,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		Rid[0].hwndTarget = wndHandle;
 		RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
 	}
+
 	//init imgui
 	{
 		// Setup Dear ImGui binding
@@ -73,6 +77,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			}
 			else
 			{
+
 				// Start the Dear ImGui frame
 				ImGui_ImplDX11_NewFrame();
 				ImGui_ImplWin32_NewFrame();
@@ -87,6 +92,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 
 		DestroyWindow(wndHandle);
+		ImGui::DestroyContext();
 	}
 
 	return (int)msg.wParam;
@@ -103,7 +109,7 @@ HWND InitWindow(HINSTANCE hInstance)
 	if (!RegisterClassEx(&wcex))
 		return false;
 
-	RECT rc = { 0, 0, 640, 480 };
+	RECT rc = { 0, 0, 1280, 720};
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 	HWND handle = CreateWindow(
@@ -125,7 +131,6 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
-	static int i = 0;
 	switch (message)
 	{
 	case WM_DESTROY:
@@ -147,11 +152,70 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			int xPosRelative = inp->data.mouse.lLastX;
 			int yPosRelative = inp->data.mouse.lLastY;
-			float pitch = static_cast<float>(yPosRelative) / 100.f;
-			float yaw = static_cast<float>(xPosRelative) / 100.f;
-			pCamera->IncreasePitchYaw(pitch, yaw);
+			float pitch = static_cast<float>(yPosRelative) / 2000.f;
+			float yaw = static_cast<float>(xPosRelative) / 2000.f;
+			gCamera.IncreasePitchYaw(pitch, yaw);
 		}
+		delete[] inputBuffer;
 		break;
+	}
+	case WM_KEYDOWN:
+	{
+		switch (wParam)
+		{
+		case VK_LEFT:
+		{
+			gInputHandler.SetAPressed(true);
+			break;
+		}
+		case VK_RIGHT:
+		{
+			gInputHandler.SetDPressed(true);
+			break;
+		}
+		case VK_UP:
+		{
+			gInputHandler.SetWPressed(true);
+			break;
+		}
+		case VK_DOWN:
+		{
+			gInputHandler.SetSPressed(true);
+			break;
+		}
+		default:
+			break;
+		}
+	
+	}
+	case WM_KEYUP:
+	{
+		switch (wParam)
+		{
+		case VK_LEFT:
+		{
+			gInputHandler.SetAPressed(false);
+			break;
+		}
+		case VK_RIGHT:
+		{
+			gInputHandler.SetDPressed(false);
+			break;
+		}
+		case VK_UP:
+		{
+			//gInputHandler.SetWPressed(false);
+			break;
+		}
+		case VK_DOWN:
+		{
+			gInputHandler.SetSPressed(false);
+			break;
+		}
+		default:
+			break;
+		}
+
 	}
 	}
 

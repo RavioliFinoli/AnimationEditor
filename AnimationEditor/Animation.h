@@ -30,9 +30,13 @@ namespace AE
 		void SetMask(float maskValue, uint32_t jointIndex);
 		void SetSkeleton(SharedSkeleton skeleton);
 		void SetAnimationData(SharedAnimationData animationData);
-
+		SharedSkeleton GetSkeleton();
+		uint32_t GetFrameCount();
 		std::shared_ptr<DifferenceClip> AsDifferenceClip();
 		std::shared_ptr<BakedClip> AsBakedClip();
+
+		Animation::SkeletonPose& operator[](size_t index);
+		Animation::SkeletonPose& GetSkeletonPose(int index);
 	private:
 		SharedAnimationData m_AnimationData = nullptr;
 		SharedSkeletonData m_SkeletonData = nullptr;

@@ -1,5 +1,5 @@
 #include "Animation.h"
-
+#include "AnimationEditorApplication.h"
 AE::AnimationHandler::AnimationHandler()
 {
 
@@ -17,7 +17,7 @@ bool AE::AnimationHandler::LoadAnimation(std::string file, std::string name, ANI
 	clip->SetAnimationData(animation);
 	clip->SetSkeleton(skeleton);
 	clip->SetSpeed(1.0f);
-
+	gAnimationClipNames.push_back(name);
 	switch (type)
 	{
 	case AE::ANIMATION_TYPE::AUTO:
@@ -42,6 +42,7 @@ bool AE::AnimationHandler::LoadSkeleton(std::string file, std::string name)
 {
 	auto skeleton = Animation::LoadAndCreateSkeleton(file);
 	m_Skeletons.insert(std::make_pair(name, skeleton));
+	gSkeletonNames.push_back(name);
 	return true;
 }
 
@@ -119,6 +120,16 @@ void AE::AnimationClip::SetAnimationData(SharedAnimationData animationData)
 	m_AnimationData = animationData;
 }
 
+AE::SharedSkeleton AE::AnimationClip::GetSkeleton()
+{
+	return m_SkeletonData;
+}
+
+uint32_t AE::AnimationClip::GetFrameCount()
+{
+	return m_AnimationData->m_frameCount;
+}
+
 std::shared_ptr<AE::DifferenceClip> AE::AnimationClip::AsDifferenceClip()
 {
 	return std::dynamic_pointer_cast<AE::DifferenceClip>(shared_from_this());
@@ -127,4 +138,14 @@ std::shared_ptr<AE::DifferenceClip> AE::AnimationClip::AsDifferenceClip()
 std::shared_ptr<AE::BakedClip> AE::AnimationClip::AsBakedClip()
 {
 	return std::dynamic_pointer_cast<AE::BakedClip>(shared_from_this());
+}
+
+Animation::SkeletonPose & AE::AnimationClip::operator[](size_t index)
+{
+	return m_AnimationData->m_skeletonPoses[index];
+}
+
+Animation::SkeletonPose& AE::AnimationClip::GetSkeletonPose(int index)
+{
+	return m_AnimationData->m_skeletonPoses[index];
 }

@@ -19,6 +19,7 @@ namespace AE
 		ComPtr<ID3D11VertexShader> GetStaticModelVertexShader();
 		ComPtr<ID3D11VertexShader> GetAnimatedModelVertexShader();
 		ComPtr<ID3D11PixelShader> GetPixelShader();
+		SharedAnimatedModel GetAnimatedModel(std::string key);
 	private:
 		ComPtr<ID3D11InputLayout> m_StaticModelLayout;
 		ComPtr<ID3D11InputLayout> m_AnimatedModelLayout;

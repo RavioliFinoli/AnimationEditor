@@ -21,6 +21,7 @@ public:
 
 
 	DirectX::XMFLOAT4X4A GetProjectionMatrix();
+	void MoveForward();
 private:
 	DirectX::XMFLOAT4X4A m_ViewProjectionMatrix = {};
 	DirectX::XMFLOAT4X4A m_ProjectionMatrix     = {};

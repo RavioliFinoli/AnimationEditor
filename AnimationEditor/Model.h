@@ -50,21 +50,36 @@ namespace AE
 	{
 	public:
 		AnimatedModel();
+		AnimatedModel(const ComPtr<ID3D11Buffer>& buffer, const ComPtr<ID3D11InputLayout>& layout, uint32_t vertexCount, std::shared_ptr<AnimationClip> clip);
 		AnimatedModel(const ComPtr<ID3D11Buffer>& buffer, const ComPtr<ID3D11InputLayout>& layout, uint32_t vertexCount);
 	
 		///Animation methods
 		void SetMainClip(std::shared_ptr<AE::AnimationClip> clip);
 		void SetAnimationLayer(std::shared_ptr<AE::AnimationClip> clip, uint8_t layer);
-	
-		void Update();
+		std::vector<DirectX::XMFLOAT4X4A>* GetSkinningMatrices();
+		void Update(float deltaTime);
 	private:
+
 		std::shared_ptr<AE::AnimationClip> m_MainClip;
+		PlaybackData m_MainClipData;
 		std::shared_ptr<AE::AnimationClip> m_AnimationLayer1;
-	
+		PlaybackData m_AnimationLayer1Data;
 		std::vector<DirectX::XMFLOAT4X4A> m_SkinningMatrices;
 		std::vector<DirectX::XMFLOAT4X4A> m_ModelMatrices;
 	
-		
+		void _computeSkinningMatrices(Animation::SkeletonPose* firstPose, Animation::SkeletonPose* secondPose, float weight);
+		void _computeSkinningMatrices(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
+		void _computeSkinningMatricesCombined(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
+		void _computeModelMatrices(Animation::SkeletonPose* firstPose, Animation::SkeletonPose* secondPose, float weight);
+		void _computeModelMatrices(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
+		void _interpolatePose(Animation::SkeletonPose* firstPose, Animation::SkeletonPose* secondPose, float weight);
+		Animation::JointPose _interpolateJointPose(Animation::JointPose * firstPose, Animation::JointPose * secondPose, float weight);
+		std::pair<uint16_t, float> _computeIndexAndProgression(float deltaTime, float currentTime, uint16_t frameCount);
+		std::pair<uint16_t, float> _computeIndexAndProgression(float deltaTime, float* currentTime, uint16_t frameCount);
+		void UpdateCombined(float deltaTime);
+		void _computeModelMatricesCombined(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
+	public:
+		float GetProgressNormalized() const;
 	};
 
 	typedef std::shared_ptr<AE::Model> SharedStaticModel;

@@ -4,12 +4,19 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_win32.h"
 #include "ImGui/imgui_impl_dx11.h"
+#include "InputHandler.h"
 ComPtr<ID3D11Device> AnimationEditorApplication::gDevice = nullptr;
 ComPtr<ID3D11DeviceContext> AnimationEditorApplication::gDeviceContext = nullptr;
 ComPtr<IDXGISwapChain> AnimationEditorApplication::gSwapChain = nullptr;
 ComPtr<ID3D11RenderTargetView> AnimationEditorApplication::gBackbufferRTV = nullptr;
-std::vector<std::string> AnimationEditorApplication::gStaticMeshNames;
 
+
+Camera gCamera;
+
+std::vector<std::string> gStaticMeshNames;
+std::vector<std::string> gAnimatedMeshNames;
+std::vector<std::string> gAnimationClipNames;
+std::vector<std::string> gSkeletonNames;
 
 HRESULT CreateDirect3DContext(HWND wndHandle)
 {
@@ -60,8 +67,8 @@ HRESULT CreateDirect3DContext(HWND wndHandle)
 void SetViewport()
 {
 	D3D11_VIEWPORT vp;
-	vp.Width = (float)640;
-	vp.Height = (float)480;
+	vp.Width = (float)1280;
+	vp.Height = (float)720;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
@@ -75,6 +82,12 @@ AnimationEditorApplication::AnimationEditorApplication()
 
 AnimationEditorApplication::~AnimationEditorApplication()
 {
+	std::vector<std::string>().swap(gStaticMeshNames);
+	std::vector<std::string>().swap(gAnimatedMeshNames);
+	ComPtr<ID3D11Device>().Swap(gDevice);
+	ComPtr<ID3D11DeviceContext>().Swap(gDeviceContext);
+	ComPtr<IDXGISwapChain>().Swap(gSwapChain);
+	ComPtr<ID3D11RenderTargetView>().Swap(gBackbufferRTV);
 }
 
 HRESULT AnimationEditorApplication::Init(HWND hwnd)
@@ -99,34 +112,86 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 void AnimationEditorApplication::DoGui()
 {
 #pragma region "Testing 1"
-	ImGui::Begin("poop");
-	const char* items[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
-	static const auto items2 = &AEApp::gStaticMeshNames;
-	static const char* item_current = items2->at(0).c_str();            // Here our selection is a single pointer stored outside the object.
-	if (ImGui::BeginCombo("combo 1", item_current, 0)) // The second parameter is the label previewed before opening the combo.
-	{
-		for (int n = 0; n < items2->size(); n++)
+	static const char* item_current_static = "None selected";
+	static const char* item_current_animated = "None selected";
+	static const char* item_current_skeleton = "None selected";
+	static const char* item_current_animation = "None selected";
+		ImGui::Begin("poop");
+		if (ImGui::BeginCombo("Static Meshes", item_current_static, 0)) // The second parameter is the label previewed before opening the combo.
 		{
-			bool is_selected = (item_current == items[n]);
-			if (ImGui::Selectable(items2->at(n).c_str(), is_selected))
-				item_current = items2->at(n).c_str();
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			for (int n = 0; n < gStaticMeshNames.size(); n++)
+			{
+				bool is_selected = (item_current_static == gAnimatedMeshNames[n]);
+				if (ImGui::Selectable(gStaticMeshNames.at(n).c_str(), is_selected))
+					item_current_static = gStaticMeshNames.at(n).c_str();
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+			ImGui::EndCombo();
 		}
-		ImGui::EndCombo();
-	}
-	if (ImGui::Button("Toggle render"))
-	{
-		m_ModelHandler.GetStaticModel(item_current)->ToggleDrawState();
-	}
-	ImGui::End();
-	static bool poo = true;
-	ImGui::ShowDemoWindow(&poo);
+		if (ImGui::BeginCombo("Animated Meshes", item_current_animated, 0)) // The second parameter is the label previewed before opening the combo.
+		{
+			for (int n = 0; n < gAnimatedMeshNames.size(); n++)
+			{
+				bool is_selected = (item_current_animated == gAnimatedMeshNames[n]);
+				if (ImGui::Selectable(gAnimatedMeshNames.at(n).c_str(), is_selected))
+					item_current_animated = gAnimatedMeshNames.at(n).c_str();
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::BeginCombo("Skeletons", item_current_skeleton, 0)) // The second parameter is the label previewed before opening the combo.
+		{
+			for (int n = 0; n < gSkeletonNames.size(); n++)
+			{
+				bool is_selected = (item_current_skeleton == gSkeletonNames[n]);
+				if (ImGui::Selectable(gSkeletonNames.at(n).c_str(), is_selected))
+					item_current_skeleton = gSkeletonNames.at(n).c_str();
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::BeginCombo("Animations", item_current_animation, 0)) // The second parameter is the label previewed before opening the combo.
+		{
+			for (int n = 0; n < gAnimationClipNames.size(); n++)
+			{
+				bool is_selected = (item_current_animation == gAnimationClipNames[n]);
+				if (ImGui::Selectable(gAnimationClipNames.at(n).c_str(), is_selected))
+					item_current_animation = gAnimationClipNames.at(n).c_str();
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::Button("Toggle render"))
+		{
+			if (item_current_static != "None selected")
+				m_ModelHandler.GetStaticModel(item_current_static)->ToggleDrawState();
+		}
+		if (ImGui::Button("Set Skeleton"))
+		{
+			auto skeleton = m_AnimationHandler.GetSkeleton(item_current_skeleton);
+			m_AnimationHandler.GetRawClip(item_current_animation)->SetSkeleton(skeleton);
+		}
+		if (ImGui::Button("Set Animation"))
+		{
+			auto animation = m_AnimationHandler.GetRawClip(item_current_animation);
+			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(animation);
+		}
+		ImGui::End();
+		static bool poo = true;
+		ImGui::ShowDemoWindow(&poo);
+	
 #pragma endregion "Testing 1"
 
 #pragma region "Testing 2"
 	ImGui::Begin("poop 2");
-
+	float progress = 0.0f;
+	if (item_current_animated != "None selected")
+		progress = m_ModelHandler.GetAnimatedModel(item_current_animated)->GetProgressNormalized();
+	ImGui::ProgressBar(progress);
 	ImGui::End();
 #pragma endregion "Testing 2"
 }
@@ -136,6 +201,17 @@ void AnimationEditorApplication::Update()
 {
 	//Update gui
 	DoGui();
+	float deltaTime = ImGui::GetIO().DeltaTime;
+	//Update animated models
+	for (auto& model : m_ModelHandler.GetAnimatedModelMap())
+	{
+		model.second->Update(deltaTime);
+	}
+
+	if (gInputHandler.GetWState())
+	{
+		gCamera.MoveForward(); //#todo broken af
+	}
 }
 
 void AnimationEditorApplication::Render()
@@ -158,8 +234,8 @@ void AnimationEditorApplication::Render()
 	gDeviceContext->IASetInputLayout(m_ModelHandler.GetStaticModelInputLayout().Get());
 
 	PerFrameData pf = {};
-	pf.viewProjectionMatrix = m_Camera.GetViewProjectionMatrix();
-	pf.cameraPosition = m_Camera.GetPosition();
+	pf.viewProjectionMatrix = gCamera.GetViewProjectionMatrix();
+	pf.cameraPosition = gCamera.GetPosition();
 
 	m_PerFrameBuffer->SetData(&pf);
 	m_PerFrameBuffer->BindToVertexShader();
@@ -180,12 +256,20 @@ void AnimationEditorApplication::Render()
 			gDeviceContext->Draw(vertexCount, 0);
 		}
 	}
-
+	gDeviceContext->IASetInputLayout(m_ModelHandler.GetAnimatedModelInputLayout().Get());
+	gDeviceContext->VSSetShader(m_ModelHandler.GetAnimatedModelVertexShader().Get(), nullptr, 0);
 	vertexSize = (sizeof(float) * 15) + (sizeof(unsigned int) * 4);
 	for (auto& model : animatedModels)
 	{
 		if (model.second->GetDrawState())
 		{
+			PerAnimatedObjectData pao = {};
+			pao.worldMatrix = model.second->GetWorldMatrix();
+			auto skinningMatrices = model.second->GetSkinningMatrices();
+			memcpy(&pao.skinningMatrices, skinningMatrices->data(), sizeof(DirectX::XMFLOAT4X4A) * skinningMatrices->size());
+			m_PerAnimatedObjectBuffer->SetData(&pao);
+			m_PerAnimatedObjectBuffer->BindToVertexShader();
+
 			auto buffer = model.second->GetVertexBuffer();
 			auto vertexCount = model.second->GetVertexCount();
 
@@ -253,12 +337,9 @@ bool AnimationEditorApplication::LoadAnimatedMeshFilesInDirectory(std::string di
 	for (const auto& i : dirsAndFileNames)
 	{
 		m_ModelHandler.LoadAnimatedModel(i.first, i.second);
+		gAnimatedMeshNames.push_back(i.second);
 	}
 	return false;
 }
 
-Camera* AnimationEditorApplication::GetCamera()
-{
-	return &m_Camera;
-}
 

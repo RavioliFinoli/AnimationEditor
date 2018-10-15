@@ -126,5 +126,6 @@
   <ItemGroup>
     <FxCompile Include="BasicVS.hlsl" />
     <FxCompile Include="BasicPS.hlsl" />
+    <FxCompile Include="AnimatedVS.hlsl" />
   </ItemGroup>
 </Project>

@@ -6,7 +6,8 @@ const DirectX::XMFLOAT4A default_right = { 1.0f, 0.0f, 0.0f, 0.0f };
 Camera::Camera()
 {
 	using namespace DirectX;
-	XMStoreFloat4x4A(&m_ProjectionMatrix, XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, 1.33333333333f, 0.1f, 100.0f));
+	XMStoreFloat4x4A(&m_ProjectionMatrix, XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4 * 1.5f, 1.7777777f, 0.1f, 100.0f));
+	m_CameraPosition = { 0.0f, 0.0, -4.0f, 1.0f };
 }
 
 
@@ -68,6 +69,12 @@ float Camera::GetYaw()
 DirectX::XMFLOAT4X4A Camera::GetProjectionMatrix()
 {
 	return m_ProjectionMatrix;
+}
+
+void Camera::MoveForward()
+{
+	using namespace DirectX;
+	XMStoreFloat4A(&m_CameraPosition, XMVectorScale(XMVectorAdd(XMLoadFloat4A(&m_CameraPosition), XMVector4Transform(XMLoadFloat4A(&default_forward), XMLoadFloat4x4A(&m_CameraOrientation))), -0.01f));
 }
 
 DirectX::XMFLOAT4A Camera::GetPosition()
