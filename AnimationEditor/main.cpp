@@ -2,7 +2,9 @@
 #include "importer/FormatHeader.h"
 #include "importer/FormatImporter.h"
 #include "AnimationEditorApplication.h"
-
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx11.h"
 #ifndef UNICODE
 #define UNICODE
 #endif 
@@ -14,7 +16,7 @@
 #define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
 #endif
 
-#include <windows.h>
+#include <Windows.h>
 #include <d3dcompiler.h>
 
 #pragma comment (lib, "d3d11.lib")
@@ -43,7 +45,20 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		Rid[0].hwndTarget = wndHandle;
 		RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
 	}
+	//init imgui
+	{
+		// Setup Dear ImGui binding
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 
+		ImGui_ImplWin32_Init(wndHandle);
+		ImGui_ImplDX11_Init(AEApp::gDevice.Get(), AEApp::gDeviceContext.Get());
+
+		// Setup style
+		ImGui::StyleColorsDark();
+	}
 	if (wndHandle)
 	{
 		ShowWindow(wndHandle, nCmdShow);
@@ -57,8 +72,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			}
 			else
 			{
+				// Start the Dear ImGui frame
+				ImGui_ImplDX11_NewFrame();
+				ImGui_ImplWin32_NewFrame();
+				ImGui::NewFrame();
+
+				app.Update();
 				app.Render();
 				app.Present();
+				ImGui::Render();
+
 			}
 		}
 
@@ -97,9 +120,10 @@ HWND InitWindow(HINSTANCE hInstance)
 
 	return handle;
 }
-
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
 	static int i = 0;
 	switch (message)
 	{

@@ -33,5 +33,7 @@ namespace AE
 	
 		void _initInputLayoutsAndShaders();
 		void _createVertexBuffer(PVOID64 vertexData, size_t vertexCount, size_t vertexSize, std::string name);
+	public:
+		SharedStaticModel GetStaticModel(std::string key);
 	};
 }

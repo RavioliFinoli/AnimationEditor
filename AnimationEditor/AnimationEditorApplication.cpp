@@ -1,12 +1,14 @@
 #include "AnimationEditorApplication.h"
 #include "../AnimationModule/src/AnimationModule.h"
 #include "Helpers.h"
-
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx11.h"
 ComPtr<ID3D11Device> AnimationEditorApplication::gDevice = nullptr;
 ComPtr<ID3D11DeviceContext> AnimationEditorApplication::gDeviceContext = nullptr;
 ComPtr<IDXGISwapChain> AnimationEditorApplication::gSwapChain = nullptr;
 ComPtr<ID3D11RenderTargetView> AnimationEditorApplication::gBackbufferRTV = nullptr;
-
+std::vector<std::string> AnimationEditorApplication::gStaticMeshNames;
 
 HRESULT CreateDirect3DContext(HWND wndHandle)
 {
@@ -92,10 +94,47 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 	return hr;
 }
 
+#pragma region "ImGui"
+void AnimationEditorApplication::DoGui()
+{
+#pragma region "Testing 1"
+	ImGui::Begin("poop");
+	const char* items[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
+	static const auto items2 = &AEApp::gStaticMeshNames;
+	static const char* item_current = items2->at(0).c_str();            // Here our selection is a single pointer stored outside the object.
+	if (ImGui::BeginCombo("combo 1", item_current, 0)) // The second parameter is the label previewed before opening the combo.
+	{
+		for (int n = 0; n < items2->size(); n++)
+		{
+			bool is_selected = (item_current == items[n]);
+			if (ImGui::Selectable(items2->at(n).c_str(), is_selected))
+				item_current = items2->at(n).c_str();
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::Button("Toggle render"))
+	{
+		m_ModelHandler.GetStaticModel(item_current)->ToggleDrawState();
+	}
+	ImGui::End();
+	static bool poo = true;
+	ImGui::ShowDemoWindow(&poo);
+#pragma endregion "Testing 1"
+
+#pragma region "Testing 2"
+	ImGui::Begin("poop 2");
+
+	ImGui::End();
+#pragma endregion "Testing 2"
+}
+#pragma endregion "ImGui"
 
 void AnimationEditorApplication::Update()
 {
-	//Update stuff
+	//Update gui
+	DoGui();
 }
 
 void AnimationEditorApplication::Render()
@@ -116,7 +155,7 @@ void AnimationEditorApplication::Render()
 	gDeviceContext->PSSetShader(m_ModelHandler.GetPixelShader().Get(), nullptr, 0);
 
 	gDeviceContext->IASetInputLayout(m_ModelHandler.GetStaticModelInputLayout().Get());
-	m_Camera.IncreasePitchYaw(0.0f, 0.0001f);
+
 	PerFrameData pf = {};
 	pf.viewProjectionMatrix = m_Camera.GetViewProjectionMatrix();
 	pf.cameraPosition = m_Camera.GetPosition();
@@ -127,26 +166,34 @@ void AnimationEditorApplication::Render()
 	UINT32 offset = 0;
 	for (auto& model : staticModels)
 	{
-		PerStaticObjectData pso = {};
-		pso.worldMatrix = model.second->GetWorldMatrix();
-		m_PerStaticObjectBuffer->SetData(&pso);
-		m_PerStaticObjectBuffer->BindToVertexShader();
-		auto buffer = model.second->GetVertexBuffer();
-		auto vertexCount = model.second->GetVertexCount();
-
-		gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
-		gDeviceContext->Draw(vertexCount, 0);
+		if (model.second->GetDrawState())
+		{
+			PerStaticObjectData pso = {};
+			pso.worldMatrix = model.second->GetWorldMatrix();
+			m_PerStaticObjectBuffer->SetData(&pso);
+			m_PerStaticObjectBuffer->BindToVertexShader();
+			auto buffer = model.second->GetVertexBuffer();
+			auto vertexCount = model.second->GetVertexCount();
+	
+			gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
+			gDeviceContext->Draw(vertexCount, 0);
+		}
 	}
 
-	//vertexSize = (sizeof(float) * 15) + (sizeof(unsigned int) * 4);
-	//for (auto& model : animatedModels)
-	//{
-	//	auto buffer = model.second->GetVertexBuffer();
-	//	auto vertexCount = model.second->GetVertexCount();
+	vertexSize = (sizeof(float) * 15) + (sizeof(unsigned int) * 4);
+	for (auto& model : animatedModels)
+	{
+		if (model.second->GetDrawState())
+		{
+			auto buffer = model.second->GetVertexBuffer();
+			auto vertexCount = model.second->GetVertexCount();
 
-	//	gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
-	//	gDeviceContext->Draw(vertexCount, 0);
-	//}
+			gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
+			gDeviceContext->Draw(vertexCount, 0);
+		}
+	}
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 void AnimationEditorApplication::Present()
@@ -175,7 +222,10 @@ bool AnimationEditorApplication::LoadStaticMeshFilesInDirectory(std::string dir)
 {
 	auto dirsAndFileNames = GetPathsAndNamesToFilesMatching("STATIC", dir);
 	for (const auto& i : dirsAndFileNames)
+	{
 		m_ModelHandler.LoadStaticModel(i.first, i.second);
+		gStaticMeshNames.push_back(i.second);
+	}
 	return false;
 }
 

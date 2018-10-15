@@ -229,3 +229,8 @@ void AE::GraphicsHandler::_createVertexBuffer(PVOID64 vertexData, size_t vertexC
 	assert(hr == S_OK);
 	m_BufferMap.insert(std::make_pair(name, buffer));
 }
+
+AE::SharedStaticModel AE::GraphicsHandler::GetStaticModel(std::string key)
+{
+	return m_StaticModelMap.at(key);
+}

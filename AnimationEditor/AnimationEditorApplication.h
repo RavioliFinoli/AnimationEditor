@@ -36,6 +36,7 @@ public:
 
 	HRESULT Init(HWND hwnd);
 
+	void DoGui();
 	void Update();
 	void Render();
 	void Present();
@@ -44,6 +45,7 @@ public:
 	static ComPtr<ID3D11DeviceContext> gDeviceContext;
 	static ComPtr<IDXGISwapChain> gSwapChain;
 	static ComPtr<ID3D11RenderTargetView> gBackbufferRTV;
+	static std::vector<std::string> gStaticMeshNames;
 	bool LoadSkeletonFilesInDirectory(std::string dir);
 	bool LoadAnimationFilesInDirectory(std::string dir);
 	bool LoadStaticMeshFilesInDirectory(std::string dir);
@@ -53,6 +55,7 @@ private:
 	AE::GraphicsHandler m_ModelHandler;
 
 	Camera m_Camera;
+
 
 	std::unique_ptr<ConstantBuffer> m_PerFrameBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerStaticObjectBuffer;

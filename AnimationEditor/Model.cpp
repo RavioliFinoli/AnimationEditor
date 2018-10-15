@@ -89,7 +89,17 @@ namespace AE
 	{
 		return m_VertexCount;
 	}
-	
+
+	void Model::ToggleDrawState()
+	{
+		m_bDraw = !m_bDraw;
+	}
+
+	bool Model::GetDrawState()
+	{
+		return m_bDraw;
+	}
+
 	AnimatedModel::AnimatedModel()
 	{
 	}

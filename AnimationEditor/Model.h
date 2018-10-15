@@ -40,6 +40,10 @@ namespace AE
 		ComPtr<ID3D11Buffer> m_VertexBuffer;
 		ComPtr<ID3D11InputLayout> m_InputLayout;
 		uint32_t m_VertexCount = 0;
+		bool m_bDraw = true;
+	public:
+		void ToggleDrawState();
+		bool GetDrawState();
 	};
 	
 	class AnimatedModel : public Model
