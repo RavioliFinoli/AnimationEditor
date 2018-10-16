@@ -37,7 +37,7 @@ namespace Animation
 	{
 		uint8_t m_jointCount;
 		std::unique_ptr<Joint[]> m_joints;
-
+		std::string name;
 		Skeleton() {};
 		Skeleton(const MyLibrary::Skeleton& skeleton);
 	};
@@ -80,6 +80,7 @@ namespace Animation
 	DirectX::XMMATRIX _createMatrixFromSRT(const MyLibrary::DecomposedTransform& transform);
 	std::shared_ptr<Animation::AnimationClip> LoadAndCreateAnimation(std::string file, std::shared_ptr<Animation::Skeleton> skeleton);
 	std::shared_ptr<Animation::Skeleton> LoadAndCreateSkeleton(std::string file);
+
 #pragma endregion Conversion stuff, Loaders, ...
 }
 

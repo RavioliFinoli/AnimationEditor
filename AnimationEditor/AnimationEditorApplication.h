@@ -63,7 +63,11 @@ private:
 	std::unique_ptr<ConstantBuffer> m_PerFrameBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerStaticObjectBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerAnimatedObjectBuffer;
+	void RenameAnimatedModel(std::string oldKey, std::string newKey);
+	void RenameSkeleton(std::string oldKey, std::string newKey);
+	void RenameRawClip(std::string oldKey, std::string newKey);
 public:
+	AE::SharedAnimatedModel GetAnimatedFromKey(std::string key);
 };
 
 typedef AnimationEditorApplication AEApp;

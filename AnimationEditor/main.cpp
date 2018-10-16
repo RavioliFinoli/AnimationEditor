@@ -2,6 +2,7 @@
 #include "importer/FormatHeader.h"
 #include "importer/FormatImporter.h"
 #include "AnimationEditorApplication.h"
+#include "Animation.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_win32.h"
 #include "ImGui/imgui_impl_dx11.h"
@@ -40,7 +41,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	app.Init(wndHandle);
 
-	app.LoadAssetsInDirectory("C:\\Repos\\AnimationEditor\\Assets\\CYL_BENDFOLDER");
+	app.LoadAssetsInDirectory("C:\\Repos\\AnimationEditor\\Assets\\newdir");
 	
 	//init mouse
 	{

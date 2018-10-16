@@ -29,6 +29,7 @@ namespace AE
 		void SetSpeed(float speed);
 		void SetMask(float maskValue, uint32_t jointIndex);
 		void SetSkeleton(SharedSkeleton skeleton);
+		void SetName(std::string name);
 		void SetAnimationData(SharedAnimationData animationData);
 		SharedSkeleton GetSkeleton();
 		uint32_t GetFrameCount();
@@ -37,11 +38,14 @@ namespace AE
 
 		Animation::SkeletonPose& operator[](size_t index);
 		Animation::SkeletonPose& GetSkeletonPose(int index);
+		std::string GetName() const;
+		AE::SharedAnimationData GetAnimationData();
 	private:
 		SharedAnimationData m_AnimationData = nullptr;
 		SharedSkeletonData m_SkeletonData = nullptr;
 		std::vector<float> m_JointMask;
 		float m_AnimationSpeed = 1.0f;
+		std::string m_Name = "N/A";
 	};
 
 	
@@ -72,6 +76,7 @@ namespace AE
 	};
 
 	typedef std::shared_ptr<AE::AnimationClip> SharedAnimationClip;
+	typedef std::shared_ptr<AE::DifferenceClip> SharedDifferenceClip;
 #pragma endregion AnimationClip base and derived
 
 #pragma region AnimationHandler
@@ -101,6 +106,10 @@ namespace AE
 		SharedAnimationClip GetBakedClip(std::string key);
 		
 		AE::SharedSkeleton GetSkeleton(std::string key);
+		std::string GetNameOfSkeleton(SharedSkeleton skeleton);
+		void AddDifferenceClip(std::string key, AE::SharedDifferenceClip clip);
+		std::unordered_map<std::string, AE::SharedSkeleton>& GetSkeletonMap();
+		std::unordered_map<std::string, AE::SharedAnimationClip>& GetRawClipMap();
 	private:
 		AnimationMap m_RawClips;
 		AnimationMap m_DifferenceClips;
@@ -120,6 +129,21 @@ namespace AE
 		bool isLooping = true;
 	};
 
+	struct AnimatedModelInformation
+	{
+		std::string skeletonName = "N/A";
+		std::string mainAnimationName = "N/A";
+		int frameCount = 0;
+	};
+
 	typedef AnimationClipPlaybackData PlaybackData;
 #pragma endregion AnimationClip and Skeleton handler
+
+#pragma region "Stuff"
+	AE::SharedAnimationData MakeNewDifferenceClip(AE::SharedAnimationData sourceClip, AE::SharedAnimationData differenceClip);
+	AE::SharedAnimationData MakeNewDifferenceClip(AE::SharedAnimationClip sourceClip, AE::SharedAnimationClip referenceClip);
+	DirectX::XMMATRIX GetBindpose(DirectX::XMFLOAT4X4A inverseBindPose);
+	DirectX::XMMATRIX GetBindpose(DirectX::XMMATRIX inverseBindPose);
+	void BakeOntoBindpose(AE::SharedDifferenceClip animation);
+#pragma endregion "Stuff"
 }

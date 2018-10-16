@@ -57,6 +57,8 @@ namespace AE
 		void SetMainClip(std::shared_ptr<AE::AnimationClip> clip);
 		void SetAnimationLayer(std::shared_ptr<AE::AnimationClip> clip, uint8_t layer);
 		std::vector<DirectX::XMFLOAT4X4A>* GetSkinningMatrices();
+		const PlaybackData& GetMainClipPlaybackData();
+		AnimatedModelInformation GetInformation();
 		void Update(float deltaTime);
 	private:
 

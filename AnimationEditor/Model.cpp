@@ -142,6 +142,23 @@ namespace AE
 		return &m_SkinningMatrices;
 	}
 
+	const AE::PlaybackData& AnimatedModel::GetMainClipPlaybackData()
+	{
+		return m_MainClipData;
+	}
+
+	AE::AnimatedModelInformation AnimatedModel::GetInformation()
+	{
+		AnimatedModelInformation ami;
+		ami.frameCount = m_MainClipData.frameCount;
+		if (m_MainClip)
+			ami.mainAnimationName = m_MainClip->GetName();
+		if (m_MainClip && m_MainClip->GetSkeleton())
+			ami.skeletonName = m_MainClip->GetSkeleton()->name;
+
+		return ami;
+	}
+
 	void AnimatedModel::Update(float deltaTime)
 	{
 		if (m_MainClipData.isPlaying && m_MainClipData.clip)

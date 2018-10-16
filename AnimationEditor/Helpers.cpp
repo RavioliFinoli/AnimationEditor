@@ -1,8 +1,8 @@
 #include "Helpers.h"
 #include <string>
 #include <iostream>
-#include <experimental/filesystem>
-using namespace std::experimental::filesystem;
+#include <filesystem>
+using namespace std::filesystem;
 
 std::string GetFileNameOnlyFromPath(std::string path)
 {

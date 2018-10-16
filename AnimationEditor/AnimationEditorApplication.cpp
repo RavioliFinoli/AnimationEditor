@@ -1,5 +1,6 @@
 #include "AnimationEditorApplication.h"
 #include "../AnimationModule/src/AnimationModule.h"
+#include "Model.h"
 #include "Helpers.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_win32.h"
@@ -90,6 +91,16 @@ AnimationEditorApplication::~AnimationEditorApplication()
 	ComPtr<ID3D11RenderTargetView>().Swap(gBackbufferRTV);
 }
 
+std::string GetPrefix(std::string input)
+{
+	auto pos = input.find_first_of("_");
+	if (pos != std::string::npos)
+	{
+		input.erase(input.begin() + pos + 1, input.end());
+	}
+	return input;
+}
+
 HRESULT AnimationEditorApplication::Init(HWND hwnd)
 {
 	HRESULT hr = CreateDirect3DContext(hwnd);
@@ -112,24 +123,25 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 void AnimationEditorApplication::DoGui()
 {
 #pragma region "Testing 1"
-	static const char* item_current_static = "None selected";
-	static const char* item_current_animated = "None selected";
-	static const char* item_current_skeleton = "None selected";
-	static const char* item_current_animation = "None selected";
-		ImGui::Begin("poop");
-		if (ImGui::BeginCombo("Static Meshes", item_current_static, 0)) // The second parameter is the label previewed before opening the combo.
-		{
-			for (int n = 0; n < gStaticMeshNames.size(); n++)
-			{
-				bool is_selected = (item_current_static == gAnimatedMeshNames[n]);
-				if (ImGui::Selectable(gStaticMeshNames.at(n).c_str(), is_selected))
-					item_current_static = gStaticMeshNames.at(n).c_str();
-				if (is_selected)
-					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
-			}
-			ImGui::EndCombo();
-		}
-		if (ImGui::BeginCombo("Animated Meshes", item_current_animated, 0)) // The second parameter is the label previewed before opening the combo.
+	static bool wantsNewDifferenceClip = false;
+	static std::string item_current_static = "None selected";
+	static std::string item_current_animated = "None selected";
+	static std::string item_current_skeleton = "None selected";
+	static std::string item_current_animation = "None selected";
+		ImGui::Begin("Assets");
+		//if (ImGui::BeginCombo("Static Meshes", item_current_static, 0)) // The second parameter is the label previewed before opening the combo.
+		//{
+		//	for (int n = 0; n < gStaticMeshNames.size(); n++)
+		//	{
+		//		bool is_selected = (item_current_static == gAnimatedMeshNames[n]);
+		//		if (ImGui::Selectable(gStaticMeshNames.at(n).c_str(), is_selected))
+		//			item_current_static = gStaticMeshNames.at(n).c_str();
+		//		if (is_selected)
+		//			ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+		//	}
+		//	ImGui::EndCombo();
+		//}
+		if (ImGui::BeginCombo("Animated Meshes", item_current_animated.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
 		{
 			for (int n = 0; n < gAnimatedMeshNames.size(); n++)
 			{
@@ -141,7 +153,8 @@ void AnimationEditorApplication::DoGui()
 			}
 			ImGui::EndCombo();
 		}
-		if (ImGui::BeginCombo("Skeletons", item_current_skeleton, 0)) // The second parameter is the label previewed before opening the combo.
+		ImGui::Separator();
+		if (ImGui::BeginCombo("Skeletons", item_current_skeleton.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
 		{
 			for (int n = 0; n < gSkeletonNames.size(); n++)
 			{
@@ -153,7 +166,18 @@ void AnimationEditorApplication::DoGui()
 			}
 			ImGui::EndCombo();
 		}
-		if (ImGui::BeginCombo("Animations", item_current_animation, 0)) // The second parameter is the label previewed before opening the combo.
+
+		if (ImGui::Button("Set Skeleton"))
+		{
+			if (item_current_skeleton != "None selected" && item_current_animation != "None selected")
+			{
+				auto skeleton = m_AnimationHandler.GetSkeleton(item_current_skeleton);
+				m_AnimationHandler.GetRawClip(item_current_animation)->SetSkeleton(skeleton);
+			}
+		}
+		ImGui::Separator();
+
+		if (ImGui::BeginCombo("Animations", item_current_animation.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
 		{
 			for (int n = 0; n < gAnimationClipNames.size(); n++)
 			{
@@ -165,27 +189,56 @@ void AnimationEditorApplication::DoGui()
 			}
 			ImGui::EndCombo();
 		}
-		if (ImGui::Button("Toggle render"))
-		{
-			if (item_current_static != "None selected")
-				m_ModelHandler.GetStaticModel(item_current_static)->ToggleDrawState();
-		}
-		if (ImGui::Button("Set Skeleton"))
-		{
-			if (item_current_skeleton != "None selected")
-			{
-				auto skeleton = m_AnimationHandler.GetSkeleton(item_current_skeleton);
-				m_AnimationHandler.GetRawClip(item_current_animation)->SetSkeleton(skeleton);
-			}
-		}
 		if (ImGui::Button("Set Animation"))
 		{
-			if (item_current_animation != "None selected")
+			if (item_current_animation != "None selected" && item_current_animated != "None selected")
 			{
 				auto animation = m_AnimationHandler.GetRawClip(item_current_animation);
 				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(animation);
 			}
 		}
+		ImGui::Separator();
+		if (ImGui::Button("Toggle render"))
+		{
+			if (item_current_static != "None selected")
+				m_ModelHandler.GetStaticModel(item_current_static)->ToggleDrawState();
+		}
+
+
+		if (ImGui::Button("Open Difference Clip maker"))
+		{
+			wantsNewDifferenceClip = true;
+		}
+
+		ImGui::NewLine();
+		ImGui::Separator();
+		ImGui::NewLine();
+		{
+			static char text_input[64] = ""; ImGui::InputText("New Name", text_input, 64);
+			static bool keepPrefix = true;
+			if (ImGui::Button("Rename Model"))
+			{
+				std::string newName = "";
+				if (keepPrefix)
+					newName.append(GetPrefix(item_current_animated));
+				newName.append(text_input);
+				RenameAnimatedModel(item_current_animated, newName);
+				item_current_animated = newName.c_str();
+			}
+
+			if (ImGui::Button("Rename Skeleton"))
+			{
+
+			}
+
+			if (ImGui::Button("Rename Animation"))
+			{
+
+			}
+
+			ImGui::Checkbox("Keep Prefix", &keepPrefix);
+		}
+
 		ImGui::End();
 		static bool poo = true;
 		ImGui::ShowDemoWindow(&poo);
@@ -200,6 +253,86 @@ void AnimationEditorApplication::DoGui()
 	ImGui::ProgressBar(progress);
 	ImGui::End();
 #pragma endregion "Testing 2"
+
+#pragma region "Testing 3"
+	if (item_current_animated != "None selected") 
+	{
+		ImGui::Begin("Animated Mesh Information");
+		std::string skeletonName = "N/A";
+		std::string mainClipName = "N/A";
+
+		auto info = m_ModelHandler.GetAnimatedModel(item_current_animated)->GetInformation();
+		
+		ImGui::BulletText("Main Animation: %s", info.mainAnimationName.c_str());
+		ImGui::BulletText("Skeleton: %s", info.skeletonName.c_str());
+		ImGui::BulletText("Frame Count: %d", info.frameCount);
+		ImGui::End();
+	}
+
+#pragma endregion "Testing 3"
+
+#pragma region "Testing 4"
+	static const char* item_current_animationRef = "None selected";
+	static const char* item_current_animationSource = "None selected";
+	if (wantsNewDifferenceClip)
+	{
+		ImGui::Begin("Difference Clip Maker");
+
+		if (ImGui::BeginCombo("Reference", item_current_animationRef, 0)) // The second parameter is the label previewed before opening the combo.
+		{
+			for (int n = 0; n < gAnimationClipNames.size(); n++)
+			{
+				bool is_selected = (item_current_animationRef == gAnimationClipNames[n]);
+				if (ImGui::Selectable(gAnimationClipNames.at(n).c_str(), is_selected))
+					item_current_animationRef = gAnimationClipNames.at(n).c_str();
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::Separator();
+
+		if (ImGui::BeginCombo("Source", item_current_animationSource, 0)) // The second parameter is the label previewed before opening the combo.
+		{
+			for (int n = 0; n < gAnimationClipNames.size(); n++)
+			{
+				bool is_selected = (item_current_animationSource == gAnimationClipNames[n]);
+				if (ImGui::Selectable(gAnimationClipNames.at(n).c_str(), is_selected))
+					item_current_animationSource = gAnimationClipNames.at(n).c_str();
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::Separator();
+		if (ImGui::Button("Create"))
+		{
+			AE::SharedDifferenceClip clip = std::make_shared<AE::DifferenceClip>();
+			auto source = m_AnimationHandler.GetRawClip(item_current_animationSource);
+			auto reference = m_AnimationHandler.GetRawClip(item_current_animationRef);
+			clip->SetAnimationData(MakeNewDifferenceClip(source, reference));
+			clip->SetName(source->GetName() + "_DIFF");
+			BakeOntoBindpose(clip);
+			m_AnimationHandler.AddDifferenceClip(clip->GetName(), clip);
+			if (item_current_animated != "None selected")
+				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(clip);
+			
+		}
+		ImGui::NewLine();
+
+		if (ImGui::Button("Close"))
+		{
+			wantsNewDifferenceClip = false;
+			item_current_animationRef = "None selected";
+			item_current_animationSource = "None selected";
+		}
+
+		ImGui::End();
+	}
+#pragma endregion "Testing 4"
+
 }
 #pragma endregion "ImGui"
 
@@ -348,4 +481,39 @@ bool AnimationEditorApplication::LoadAnimatedMeshFilesInDirectory(std::string di
 	return false;
 }
 
+void AnimationEditorApplication::RenameAnimatedModel(std::string oldKey, std::string newKey)
+{
+	auto iter = m_ModelHandler.GetAnimatedModelMap().extract(oldKey);
+	iter.key() = newKey;
+	m_ModelHandler.GetAnimatedModelMap().insert(std::move(iter));
+
+	auto vIter = std::find(gAnimatedMeshNames.begin(), gAnimatedMeshNames.end(), oldKey);
+	vIter = gAnimatedMeshNames.erase(vIter);
+	gAnimatedMeshNames.insert(vIter, newKey);
+}
+
+void AnimationEditorApplication::RenameSkeleton(std::string oldKey, std::string newKey)
+{
+	auto iter = m_AnimationHandler.GetSkeletonMap().extract(oldKey);
+	iter.key() = newKey;
+	m_AnimationHandler.GetSkeletonMap().insert(std::move(iter));
+
+	auto vIter = std::find(gSkeletonNames.begin(), gSkeletonNames.end(), oldKey);
+	gSkeletonNames.emplace(vIter, newKey);
+}
+
+void AnimationEditorApplication::RenameRawClip(std::string oldKey, std::string newKey)
+{
+	auto iter = m_AnimationHandler.GetRawClipMap().extract(oldKey);
+	iter.key() = newKey;
+	m_AnimationHandler.GetRawClipMap().insert(std::move(iter));
+
+	auto vIter = std::find(gAnimationClipNames.begin(), gAnimationClipNames.end(), oldKey);
+	gAnimationClipNames.emplace(vIter, newKey);
+}
+
+AE::SharedAnimatedModel AnimationEditorApplication::GetAnimatedFromKey(std::string key)
+{
+	return m_ModelHandler.GetAnimatedModel(key);
+}
 
