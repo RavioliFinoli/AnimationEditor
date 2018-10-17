@@ -137,6 +137,7 @@ namespace AE
 	};
 
 	typedef AnimationClipPlaybackData PlaybackData;
+	typedef AnimationClipPlaybackData AnimationLayer;
 #pragma endregion AnimationClip and Skeleton handler
 
 #pragma region "Stuff"

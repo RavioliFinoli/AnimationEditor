@@ -36,12 +36,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 #endif
 	MSG msg = { 0 };
 	HWND wndHandle = InitWindow(hInstance);
+	IDropTarget* t = nullptr;
 
-	AnimationEditorApplication app;
+	DragAcceptFiles(wndHandle, TRUE);
+	gApp.Init(wndHandle);
 
-	app.Init(wndHandle);
-
-	app.LoadAssetsInDirectory("C:\\Repos\\AnimationEditor\\Assets\\newdir");
+	//gApp.LoadAssetsInDirectory("C:\\Repos\\AnimationEditor\\Assets\\LEGS_WALKFOLDER\\");
 	
 	//init mouse
 	{
@@ -86,9 +86,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				ImGui_ImplWin32_NewFrame();
 				ImGui::NewFrame();
 
-				app.Update();
-				app.Render();
-				app.Present();
+				gApp.Update();
+				gApp.Render();
+				gApp.Present();
 				ImGui::Render();
 
 			}
@@ -139,6 +139,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_DROPFILES:
+	{
+		HDROP hDrop;
+		hDrop = (HDROP)wParam;
+		UINT nCnt = DragQueryFile(hDrop, (UINT)-1, NULL, 0);
+		for (int nIndex = 0; nIndex < nCnt; ++nIndex)
+		{
+			UINT nSize;
+			if (0 == (nSize = DragQueryFile(hDrop, nIndex, NULL, 0)))
+				continue;
+
+			TCHAR *pszFileName = new TCHAR[++nSize];
+			if (DragQueryFile(hDrop, nIndex, pszFileName, nSize)) {
+				gApp.IdentifyAndLoadFile(std::wstring(pszFileName));
+			}
+			delete[] pszFileName;
+		}
+		DragFinish(hDrop);
+	}
 	case WM_INPUT:
 	{
 		UINT rawInputSize;

@@ -57,6 +57,7 @@ public:
 	bool LoadAnimationFilesInDirectory(std::string dir, AE::SharedSkeleton skeleton);
 	bool LoadStaticMeshFilesInDirectory(std::string dir);
 	bool LoadAnimatedMeshFilesInDirectory(std::string dir);
+	void IdentifyAndLoadFile(std::wstring fullPathWide);
 private:
 	AE::AnimationHandler m_AnimationHandler;
 	AE::GraphicsHandler m_ModelHandler;
@@ -72,4 +73,5 @@ public:
 };
 
 typedef AnimationEditorApplication AEApp;
+extern AEApp gApp;
 

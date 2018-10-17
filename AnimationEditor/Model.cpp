@@ -1,6 +1,6 @@
 #include "Model.h"
 
-
+#define CLIP(x) (x.clip)
 
 namespace AE
 {
@@ -126,28 +126,27 @@ namespace AE
 
 	void AnimatedModel::SetMainClip(std::shared_ptr<AnimationClip> clip)
 	{
-		m_MainClip = clip;
 		m_MainClipData.clip = clip;
 		m_MainClipData.frameCount = clip->GetFrameCount();
 
-		if (m_ModelMatrices.size() != m_MainClip->GetSkeleton()->m_jointCount)
-			m_ModelMatrices.resize(m_MainClip->GetSkeleton()->m_jointCount);
-		if (m_SkinningMatrices.size() != m_MainClip->GetSkeleton()->m_jointCount)
-			m_SkinningMatrices.resize(m_MainClip->GetSkeleton()->m_jointCount);
+		if (m_ModelMatrices.size() != m_MainClipData.clip->GetSkeleton()->m_jointCount)
+			m_ModelMatrices.resize(m_MainClipData.clip->GetSkeleton()->m_jointCount);
+		if (m_SkinningMatrices.size() != m_MainClipData.clip->GetSkeleton()->m_jointCount)
+			m_SkinningMatrices.resize(m_MainClipData.clip->GetSkeleton()->m_jointCount);
 	}
 
 	void AnimatedModel::AddAnimationLayer(std::shared_ptr<AE::AnimationClip> clip)
 	{
-		PlaybackData data;
-		data.clip = clip;
-		data.currentFrame = 0;
-		data.currentTime = 0.0;
-		data.frameCount = clip->GetFrameCount();
-		data.frameRate = 24;
-		data.isLooping = true;
-		data.isPlaying = true;
-		data.speedScale = 1.0F;
-		m_AnimationLayers.push_back(std::make_pair(clip, data));
+		AnimationLayer layer;
+		layer.clip = clip;
+		layer.currentFrame = 0;
+		layer.currentTime = 0.0;
+		layer.frameCount = clip->GetFrameCount();
+		layer.frameRate = 24;
+		layer.isLooping = true;
+		layer.isPlaying = true;
+		layer.speedScale = 1.0F;
+		m_AnimationLayers.push_back(layer);
 	}
 
 	void AnimatedModel::SetAnimationLayer(std::shared_ptr<AnimationClip> clip, uint8_t layer)
@@ -174,10 +173,10 @@ namespace AE
 	{
 		AnimatedModelInformation ami;
 		ami.frameCount = m_MainClipData.frameCount;
-		if (m_MainClip)
-			ami.mainAnimationName = m_MainClip->GetName();
-		if (m_MainClip && m_MainClip->GetSkeleton())
-			ami.skeletonName = m_MainClip->GetSkeleton()->name;
+		if (m_MainClipData.clip)
+			ami.mainAnimationName = m_MainClipData.clip->GetName();
+		if (m_MainClipData.clip && m_MainClipData.clip->GetSkeleton())
+			ami.skeletonName = m_MainClipData.clip->GetSkeleton()->name;
 
 		return ami;
 	}
@@ -211,7 +210,7 @@ namespace AE
 
 			/// compute skinning matrices
 			if (m_MainClipData.isPlaying)
-				_computeSkinningMatrices(&m_MainClip->GetSkeletonPose(prevIndex), &m_MainClip->GetSkeletonPose(prevIndex + 1), progression);
+				_computeSkinningMatrices(&m_MainClipData.clip->GetSkeletonPose(prevIndex), &m_MainClipData.clip->GetSkeletonPose(prevIndex + 1), progression);
 		}
 		else if (m_MainClipData.isPlaying && m_MainClipData.clip && !m_AnimationLayers.empty())
 		{
@@ -240,18 +239,18 @@ namespace AE
 
 	void AnimatedModel::UpdateAdditive(float deltaTime)
 	{
-		auto skeleton = m_MainClip->GetSkeleton();
+		auto skeleton = m_MainClipData.clip->GetSkeleton();
 		auto mainIndexAndProgression = _computeIndexAndProgression(deltaTime, &m_MainClipData.currentTime, m_MainClipData.frameCount);
 		int mainPrevIndex = mainIndexAndProgression.first;
 		float mainProgression = mainIndexAndProgression.second;
 
-		auto layerIndexAndProgression = _computeIndexAndProgression(deltaTime, &m_AnimationLayers[0].second.currentTime, m_AnimationLayers[0].second.frameCount);
+		auto layerIndexAndProgression = _computeIndexAndProgression(deltaTime, &m_AnimationLayers[0].currentTime, m_AnimationLayers[0].frameCount);
 		int layerPrevIndex = layerIndexAndProgression.first;
 		float layerProgression = layerIndexAndProgression.second;
 
-		auto& layerSkeletonPoseFirst = m_AnimationLayers[0].first->GetSkeletonPose(layerPrevIndex);
+		auto& layerSkeletonPoseFirst = m_AnimationLayers[0].clip->GetSkeletonPose(layerPrevIndex);
 
-		auto& mainSkeletonPose = m_MainClip->GetSkeletonPose(mainPrevIndex);
+		auto& mainSkeletonPose = m_MainClipData.clip->GetSkeletonPose(mainPrevIndex);
 		Animation::SkeletonPose newPose;
 		Animation::SkeletonPose layerPose;
 		//init new skeleton pose
@@ -272,7 +271,7 @@ namespace AE
 	{
 		using namespace DirectX;
 
-		auto skeleton = m_MainClip->GetSkeleton();
+		auto skeleton = m_MainClipData.clip->GetSkeleton();
 
 		_computeModelMatrices(firstPose, secondPose, weight);
 
@@ -291,7 +290,7 @@ namespace AE
 	{
 		using namespace DirectX;
 		
-		auto skeleton = m_MainClip->GetSkeleton();
+		auto skeleton = m_MainClipData.clip->GetSkeleton();
 
 		_computeModelMatrices(firstPose1, secondPose1, weight1, firstPose2, secondPose2, weight2);
 
@@ -309,7 +308,7 @@ namespace AE
 	void AnimatedModel::_computeModelMatrices(Animation::SkeletonPose * firstPose, Animation::SkeletonPose * secondPose, float weight)
 	{
 		using namespace DirectX;
-		auto skeleton = m_MainClip->GetSkeleton();
+		auto skeleton = m_MainClipData.clip->GetSkeleton();
 		auto rootJointPose = _interpolateJointPose(&firstPose->m_jointPoses[0], &secondPose->m_jointPoses[0], weight);
 		DirectX::XMStoreFloat4x4A(&m_ModelMatrices[0], Animation::_createMatrixFromSRT(rootJointPose.m_transformation));
 

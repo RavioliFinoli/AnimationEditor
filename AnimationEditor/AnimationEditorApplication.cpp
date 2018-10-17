@@ -13,6 +13,7 @@ ComPtr<ID3D11RenderTargetView> AnimationEditorApplication::gBackbufferRTV = null
 
 
 Camera gCamera;
+AEApp gApp;
 
 std::vector<std::string> gStaticMeshNames;
 std::vector<std::string> gAnimatedMeshNames;
@@ -551,9 +552,35 @@ bool AnimationEditorApplication::LoadAnimatedMeshFilesInDirectory(std::string di
 	for (const auto& i : dirsAndFileNames)
 	{
 		m_ModelHandler.LoadAnimatedModel(i.first, i.second);
-		gAnimatedMeshNames.push_back(i.second);
+
 	}
 	return false;
+}
+
+void AnimationEditorApplication::IdentifyAndLoadFile(std::wstring fullPathWide)
+{
+	std::string fullPath = ws2s(fullPathWide);
+	std::string filename = "";
+	{
+		filename = fullPath;
+		auto pos = filename.find_last_of("\\");
+		filename.erase(filename.begin(), filename.begin() + pos + 1);
+	}
+	size_t pos = 0;
+	if (std::string::npos != (pos = filename.find("ANIMATION")))
+	{
+		if (!m_AnimationHandler.GetSkeletonMap().empty())
+			m_AnimationHandler.LoadAnimation(fullPath, filename, AE::ANIMATION_TYPE::RAW_CLIP, (*m_AnimationHandler.GetSkeletonMap().begin()).second);
+	}
+	else if (std::string::npos != (pos = filename.find("SKELETON")))
+	{
+		m_AnimationHandler.LoadSkeleton(fullPath, filename);
+	}
+	else if (std::string::npos != (pos = filename.find("ANIMATED")))
+	{
+		m_ModelHandler.LoadAnimatedModel(fullPath, filename);
+	}
+	else return; //could not identify file
 }
 
 void AnimationEditorApplication::RenameAnimatedModel(std::string oldKey, std::string newKey)

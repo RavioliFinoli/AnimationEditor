@@ -63,6 +63,7 @@ bool AE::GraphicsHandler::LoadAnimatedModel(std::string file, std::string name)
 	auto model = std::make_shared<AnimatedModel>(m_BufferMap.at(name), m_AnimatedModelLayout, meshData.mesh_nrOfVertices);
 	m_AnimatedModelMap.insert(std::make_pair(name, model));
 	delete[] meshData.mesh_vertices;
+	gAnimatedMeshNames.push_back(name);
 	return true;
 }
 

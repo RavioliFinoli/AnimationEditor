@@ -66,9 +66,9 @@ namespace AE
 		void Update(float deltaTime);
 	private:
 
-		std::shared_ptr<AE::AnimationClip> m_MainClip;
-		PlaybackData m_MainClipData;
-		std::vector<std::pair<AE::SharedAnimationClip, PlaybackData>> m_AnimationLayers;
+		AnimationLayer m_MainClipData;
+
+		std::vector<AnimationLayer> m_AnimationLayers;
 		std::vector<DirectX::XMFLOAT4X4A> m_SkinningMatrices;
 		std::vector<DirectX::XMFLOAT4X4A> m_ModelMatrices;
 	
