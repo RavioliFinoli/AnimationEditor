@@ -360,3 +360,10 @@ AE::SharedStaticModel AE::GraphicsHandler::GetStaticModel(std::string key)
 {
 	return m_StaticModelMap.at(key);
 }
+
+void AE::GraphicsHandler::DuplicateModel(std::string key, std::string name)
+{
+	AE::SharedAnimatedModel newModel = std::make_shared<AE::AnimatedModel>(*(m_AnimatedModelMap.at(key)));
+	m_AnimatedModelMap.insert(std::make_pair(name, newModel));
+	gAnimatedMeshNames.push_back(name);
+}

@@ -95,6 +95,11 @@ namespace AE
 		m_bDraw = !m_bDraw;
 	}
 
+	void Model::SetDrawState(bool state)
+	{
+		m_bDraw = state;
+	}
+
 	bool Model::GetDrawState()
 	{
 		return m_bDraw;
@@ -131,10 +136,23 @@ namespace AE
 			m_SkinningMatrices.resize(m_MainClip->GetSkeleton()->m_jointCount);
 	}
 
+	void AnimatedModel::AddAnimationLayer(std::shared_ptr<AE::AnimationClip> clip)
+	{
+		PlaybackData data;
+		data.clip = clip;
+		data.currentFrame = 0;
+		data.currentTime = 0.0;
+		data.frameCount = clip->GetFrameCount();
+		data.frameRate = 24;
+		data.isLooping = true;
+		data.isPlaying = true;
+		data.speedScale = 1.0F;
+		m_AnimationLayers.push_back(std::make_pair(clip, data));
+	}
+
 	void AnimatedModel::SetAnimationLayer(std::shared_ptr<AnimationClip> clip, uint8_t layer)
 	{
-		m_AnimationLayer1 = clip; //#todo
-		m_AnimationLayer1Data.clip = clip;
+
 	}
 
 	std::vector<DirectX::XMFLOAT4X4A>* AnimatedModel::GetSkinningMatrices()
@@ -145,6 +163,11 @@ namespace AE
 	const AE::PlaybackData& AnimatedModel::GetMainClipPlaybackData()
 	{
 		return m_MainClipData;
+	}
+
+	uint8_t AnimatedModel::GetLayerCount()
+	{
+		return static_cast<uint8_t>(m_AnimationLayers.size());
 	}
 
 	AE::AnimatedModelInformation AnimatedModel::GetInformation()
@@ -161,17 +184,15 @@ namespace AE
 
 	void AnimatedModel::Update(float deltaTime)
 	{
-		if (m_MainClipData.isPlaying && m_MainClipData.clip)
+		if (m_MainClipData.isPlaying && m_MainClipData.clip && m_AnimationLayers.empty())
 		{
 			/// increase local time
 			//done in _computeIndexAndProgression()
 
 			///calc the actual frame index and progression towards the next frame
-			int prevIndex = std::floorf(24 * m_MainClipData.currentTime);
-			float progression = std::fmod(m_MainClipData.currentTime, 1.0 / 24.0) * 24.0;
 			auto indexAndProgression = _computeIndexAndProgression(deltaTime, &m_MainClipData.currentTime, m_MainClipData.frameCount);
-			prevIndex = indexAndProgression.first;
-			progression = indexAndProgression.second;
+			int prevIndex = indexAndProgression.first;
+			float progression = indexAndProgression.second;
 			///if we exceeded clips time, set back to 0 ish if we are looping, or stop if we aren't
 			if (prevIndex >= m_MainClipData.frameCount - 1) /// -1 because last frame is only used to interpolate towards
 			{
@@ -192,6 +213,59 @@ namespace AE
 			if (m_MainClipData.isPlaying)
 				_computeSkinningMatrices(&m_MainClip->GetSkeletonPose(prevIndex), &m_MainClip->GetSkeletonPose(prevIndex + 1), progression);
 		}
+		else if (m_MainClipData.isPlaying && m_MainClipData.clip && !m_AnimationLayers.empty())
+		{
+			UpdateAdditive(deltaTime);
+		}
+	}
+
+	Animation::JointPose getAdditivePose(Animation::JointPose targetPose, Animation::JointPose differencePose)
+	{
+		using namespace DirectX;
+
+		XMMATRIX targetPoseMatrix = _createMatrixFromSRT(targetPose.m_transformation);
+		XMMATRIX differencePoseMatrix = _createMatrixFromSRT(differencePose.m_transformation);
+		XMMATRIX additivePoseMatrix = XMMatrixMultiply(targetPoseMatrix, differencePoseMatrix);
+
+
+		Animation::SRT additivePose = {};
+		XMVECTOR s, r, t;
+		XMMatrixDecompose(&s, &r, &t, additivePoseMatrix);
+		XMStoreFloat4A(&additivePose.m_scale, s);
+		XMStoreFloat4A(&additivePose.m_rotationQuaternion, r);
+		XMStoreFloat4A(&additivePose.m_translation, t);
+
+		return Animation::JointPose(additivePose);
+	}
+
+	void AnimatedModel::UpdateAdditive(float deltaTime)
+	{
+		auto skeleton = m_MainClip->GetSkeleton();
+		auto mainIndexAndProgression = _computeIndexAndProgression(deltaTime, &m_MainClipData.currentTime, m_MainClipData.frameCount);
+		int mainPrevIndex = mainIndexAndProgression.first;
+		float mainProgression = mainIndexAndProgression.second;
+
+		auto layerIndexAndProgression = _computeIndexAndProgression(deltaTime, &m_AnimationLayers[0].second.currentTime, m_AnimationLayers[0].second.frameCount);
+		int layerPrevIndex = layerIndexAndProgression.first;
+		float layerProgression = layerIndexAndProgression.second;
+
+		auto& layerSkeletonPoseFirst = m_AnimationLayers[0].first->GetSkeletonPose(layerPrevIndex);
+
+		auto& mainSkeletonPose = m_MainClip->GetSkeletonPose(mainPrevIndex);
+		Animation::SkeletonPose newPose;
+		Animation::SkeletonPose layerPose;
+		//init new skeleton pose
+		{
+			newPose.m_jointPoses = std::make_unique<Animation::JointPose[]>(skeleton->m_jointCount);
+			for (int i = 0; i < skeleton->m_jointCount; i++)
+			{
+				newPose.m_jointPoses[i] = mainSkeletonPose.m_jointPoses[i];
+				newPose.m_jointPoses[i] = getAdditivePose(newPose.m_jointPoses[i], layerSkeletonPoseFirst.m_jointPoses[i]);
+			}
+		}
+
+		_computeSkinningMatrices(&newPose, &newPose, 0.0f);
+
 	}
 
 	void AnimatedModel::_computeSkinningMatrices(Animation::SkeletonPose * firstPose, Animation::SkeletonPose * secondPose, float weight)
@@ -300,5 +374,7 @@ namespace AE
 	{
 		return m_MainClipData.currentTime / (1.0 / 24.0 * (m_MainClipData.frameCount-1));
 	}
+
+
 
 }

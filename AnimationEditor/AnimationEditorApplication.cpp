@@ -18,6 +18,7 @@ std::vector<std::string> gStaticMeshNames;
 std::vector<std::string> gAnimatedMeshNames;
 std::vector<std::string> gAnimationClipNames;
 std::vector<std::string> gSkeletonNames;
+std::vector<std::string> gDifferenceClipNames;
 
 HRESULT CreateDirect3DContext(HWND wndHandle)
 {
@@ -124,10 +125,12 @@ void AnimationEditorApplication::DoGui()
 {
 #pragma region "Testing 1"
 	static bool wantsNewDifferenceClip = false;
+	static bool wantsToDuplicate = false;
 	static std::string item_current_static = "None selected";
 	static std::string item_current_animated = "None selected";
 	static std::string item_current_skeleton = "None selected";
 	static std::string item_current_animation = "None selected";
+	static std::string item_current_diffAnimation = "None selected";
 		ImGui::Begin("Assets");
 		//if (ImGui::BeginCombo("Static Meshes", item_current_static, 0)) // The second parameter is the label previewed before opening the combo.
 		//{
@@ -147,7 +150,13 @@ void AnimationEditorApplication::DoGui()
 			{
 				bool is_selected = (item_current_animated == gAnimatedMeshNames[n]);
 				if (ImGui::Selectable(gAnimatedMeshNames.at(n).c_str(), is_selected))
+				{
+					if (item_current_animated != "None selected")
+						m_ModelHandler.GetAnimatedModel(item_current_animated)->SetDrawState(false);
 					item_current_animated = gAnimatedMeshNames.at(n).c_str();
+					m_ModelHandler.GetAnimatedModel(item_current_animated)->SetDrawState(true);
+
+				}
 				if (is_selected)
 					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
 			}
@@ -209,6 +218,10 @@ void AnimationEditorApplication::DoGui()
 		{
 			wantsNewDifferenceClip = true;
 		}
+		if (ImGui::Button("Duplicate Model"))
+		{
+			wantsToDuplicate = true;
+		}
 
 		ImGui::NewLine();
 		ImGui::Separator();
@@ -237,6 +250,28 @@ void AnimationEditorApplication::DoGui()
 			}
 
 			ImGui::Checkbox("Keep Prefix", &keepPrefix);
+		}
+		ImGui::Separator();
+		if (ImGui::BeginCombo("Difference Clips", item_current_diffAnimation.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
+		{
+			for (int n = 0; n < gDifferenceClipNames.size(); n++)
+			{
+				bool is_selected = (item_current_diffAnimation == gDifferenceClipNames[n]);
+				if (ImGui::Selectable(gDifferenceClipNames.at(n).c_str(), is_selected))
+				{
+					item_current_diffAnimation = gDifferenceClipNames.at(n);
+				}
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::Button("Add Clip as Layer"))
+		{
+			if (item_current_animated != "None selected")
+			{
+				m_ModelHandler.GetAnimatedModel(item_current_animated)->AddAnimationLayer(m_AnimationHandler.GetDifferenceClip(item_current_diffAnimation));
+			}
 		}
 
 		ImGui::End();
@@ -314,10 +349,11 @@ void AnimationEditorApplication::DoGui()
 			auto reference = m_AnimationHandler.GetRawClip(item_current_animationRef);
 			clip->SetAnimationData(MakeNewDifferenceClip(source, reference));
 			clip->SetName(source->GetName() + "_DIFF");
-			BakeOntoBindpose(clip);
+			//m_ModelHandler.GetAnimatedModel(item_current_animated)->AddAnimationLayer(clip);
+			//BakeOntoBindpose(clip);
 			m_AnimationHandler.AddDifferenceClip(clip->GetName(), clip);
-			if (item_current_animated != "None selected")
-				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(clip);
+			//if (item_current_animated != "None selected")
+			//	m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(clip);
 			
 		}
 		ImGui::NewLine();
@@ -331,7 +367,46 @@ void AnimationEditorApplication::DoGui()
 
 		ImGui::End();
 	}
+
+	if (wantsToDuplicate)
+	{
+		static char text_input[64] = "";
+
+		ImGui::Begin("Duplicate selected");
+		ImGui::InputText("Name", text_input, 64);
+		ImGui::NewLine();
+
+		if (ImGui::Button("Duplicate"))
+		{
+			m_ModelHandler.DuplicateModel(item_current_animated, text_input);
+
+			wantsToDuplicate = false;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Close"))
+		{
+			wantsToDuplicate = false;
+		}
+		ImGui::End();
+	}
 #pragma endregion "Testing 4"
+
+	
+
+	//if (item_current_animated != "None selected")
+	//{
+	//	ImGui::Begin("Layers");
+
+	//	for (int layer = 0; layer < m_ModelHandler.GetAnimatedModel(item_current_animated)->GetLayerCount(); layer++)
+	//	{
+	//		std::string layerString = "Layer " + std::to_string(layer);
+	//		ImGui::BeginCombo(layerString.c_str(), " ");
+	//		ImGui::EndCombo();
+	//	}
+
+	//	ImGui::End();
+	//}
+
 
 }
 #pragma endregion "ImGui"

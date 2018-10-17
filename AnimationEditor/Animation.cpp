@@ -110,6 +110,7 @@ std::string AE::AnimationHandler::GetNameOfSkeleton(SharedSkeleton skeleton)
 void AE::AnimationHandler::AddDifferenceClip(std::string key, AE::SharedDifferenceClip clip)
 {
 	m_DifferenceClips.insert(std::make_pair(key, clip));
+	gDifferenceClipNames.push_back(key);
 }
 
 std::unordered_map<std::string, AE::SharedSkeleton>& AE::AnimationHandler::GetSkeletonMap()

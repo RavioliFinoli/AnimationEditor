@@ -16,6 +16,7 @@ extern std::vector<std::string> gStaticMeshNames;
 extern std::vector<std::string> gAnimatedMeshNames;
 extern std::vector<std::string> gAnimationClipNames;
 extern std::vector<std::string> gSkeletonNames;
+extern std::vector<std::string> gDifferenceClipNames;
 
 struct PerFrameData 
 {

@@ -40,9 +40,10 @@ namespace AE
 		ComPtr<ID3D11Buffer> m_VertexBuffer;
 		ComPtr<ID3D11InputLayout> m_InputLayout;
 		uint32_t m_VertexCount = 0;
-		bool m_bDraw = true;
+		bool m_bDraw = false;
 	public:
 		void ToggleDrawState();
+		void SetDrawState(bool state);
 		bool GetDrawState();
 	};
 	
@@ -55,17 +56,19 @@ namespace AE
 	
 		///Animation methods
 		void SetMainClip(std::shared_ptr<AE::AnimationClip> clip);
+		void AddAnimationLayer(std::shared_ptr<AE::AnimationClip> clip);
+		void PopAnimationLayer(uint8_t layerIndex);
 		void SetAnimationLayer(std::shared_ptr<AE::AnimationClip> clip, uint8_t layer);
 		std::vector<DirectX::XMFLOAT4X4A>* GetSkinningMatrices();
 		const PlaybackData& GetMainClipPlaybackData();
+		uint8_t GetLayerCount();
 		AnimatedModelInformation GetInformation();
 		void Update(float deltaTime);
 	private:
 
 		std::shared_ptr<AE::AnimationClip> m_MainClip;
 		PlaybackData m_MainClipData;
-		std::shared_ptr<AE::AnimationClip> m_AnimationLayer1;
-		PlaybackData m_AnimationLayer1Data;
+		std::vector<std::pair<AE::SharedAnimationClip, PlaybackData>> m_AnimationLayers;
 		std::vector<DirectX::XMFLOAT4X4A> m_SkinningMatrices;
 		std::vector<DirectX::XMFLOAT4X4A> m_ModelMatrices;
 	
@@ -80,6 +83,7 @@ namespace AE
 		std::pair<uint16_t, float> _computeIndexAndProgression(float deltaTime, float* currentTime, uint16_t frameCount);
 		void UpdateCombined(float deltaTime);
 		void _computeModelMatricesCombined(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
+		void UpdateAdditive(float deltaTime);
 	public:
 		float GetProgressNormalized() const;
 	};
