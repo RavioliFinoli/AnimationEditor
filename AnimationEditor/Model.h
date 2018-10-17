@@ -7,7 +7,7 @@
 #include <vector>
 using Microsoft::WRL::ComPtr;
 
-
+ 
 namespace AE
 {
 	class AnimatedModel;
