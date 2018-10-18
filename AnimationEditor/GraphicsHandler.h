@@ -1,6 +1,7 @@
 #pragma once
 #include "Animation.h"
 #include "Model.h"
+#include "AnimatedModel.h"
 namespace AE
 {
 	class GraphicsHandler

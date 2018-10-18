@@ -1,6 +1,7 @@
 #include "AnimationEditorApplication.h"
 #include "../AnimationModule/src/AnimationModule.h"
 #include "Model.h"
+#include "AnimatedModel.h"
 #include "Helpers.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_win32.h"
@@ -353,8 +354,8 @@ void AnimationEditorApplication::DoGui()
 			//m_ModelHandler.GetAnimatedModel(item_current_animated)->AddAnimationLayer(clip);
 			//BakeOntoBindpose(clip);
 			m_AnimationHandler.AddDifferenceClip(clip->GetName(), clip);
-			//if (item_current_animated != "None selected")
-			//	m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(clip);
+// 			if (item_current_animated != "None selected")
+// 				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(clip);
 			
 		}
 		ImGui::NewLine();
