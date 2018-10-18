@@ -121,6 +121,11 @@ namespace AE
 		}
 	}
 	
+	void AnimatedModel::SetLayerWeight(float weight, int layer)
+	{
+		m_AnimationLayers[layer].weight = weight;
+	}
+
 	Animation::JointPose getAdditivePose(Animation::JointPose targetPose, Animation::JointPose differencePose)
 	{
 		using namespace DirectX;
@@ -221,6 +226,17 @@ namespace AE
 	
 	}
 	
+	void AnimatedModel::_weightPose(Animation::JointPose& jointPose, float weight)
+	{
+		using namespace DirectX;
+		Animation::JointPose zeroPose;
+		XMStoreFloat4A(&zeroPose.m_transformation.m_rotationQuaternion, XMQuaternionIdentity());
+		zeroPose.m_transformation.m_scale = { 1.0, 1.0, 1.0, 1.0 };
+		zeroPose.m_transformation.m_translation = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+		jointPose = _interpolateJointPose(&zeroPose, &jointPose, weight);
+	}
+
 	Animation::JointPose AnimatedModel::_getPoseFromLayer(AE::AnimationLayer& layer, uint8_t jointIndex, float deltaTime)
 	{
 		std::pair<int, float> layerIndexAndProgression;
@@ -235,7 +251,18 @@ namespace AE
 		auto& firstSkeletonPose = layer.clip->GetSkeletonPose(layerPrevIndex);
 		auto& secondSkeletonPose = layer.clip->GetSkeletonPose(layerPrevIndex + 1);
 
-		return _interpolateJointPose(&firstSkeletonPose.m_jointPoses[jointIndex], &secondSkeletonPose.m_jointPoses[jointIndex], layerProgression);
+		auto firstJointPose = firstSkeletonPose.m_jointPoses[jointIndex];
+		auto secondJointPose = secondSkeletonPose.m_jointPoses[jointIndex];
+		//#todo
+		{
+			if (layer.weight < 0.999999f)
+			{
+				_weightPose(firstJointPose, layer.weight);
+				_weightPose(secondJointPose, layer.weight);
+			}
+		}
+
+		return _interpolateJointPose(&firstJointPose, &secondJointPose, layerProgression);
 	}
 
 	void AnimatedModel::_computeSkinningMatrices(Animation::SkeletonPose * firstPose, Animation::SkeletonPose * secondPose, float weight)

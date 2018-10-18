@@ -394,20 +394,23 @@ void AnimationEditorApplication::DoGui()
 #pragma endregion "Testing 4"
 
 	
+	static float weights[5] = { 1.0, 1.0, 1.0, 1.0, 1.0 };
+	if (item_current_animated != "None selected")
+	{
+		ImGui::Begin("Layers");
 
-	//if (item_current_animated != "None selected")
-	//{
-	//	ImGui::Begin("Layers");
+		for (int layer = 0; layer < m_ModelHandler.GetAnimatedModel(item_current_animated)->GetLayerCount(); layer++)
+		{
+			std::string layerString = "Layer " + std::to_string(layer);
+			ImGui::BulletText(layerString.c_str());
+			if (ImGui::SliderFloat("Weight", &weights[layer], 0.0f, 1.0f))
+			{
+				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetLayerWeight(weights[layer], layer);
+			}
+		}
 
-	//	for (int layer = 0; layer < m_ModelHandler.GetAnimatedModel(item_current_animated)->GetLayerCount(); layer++)
-	//	{
-	//		std::string layerString = "Layer " + std::to_string(layer);
-	//		ImGui::BeginCombo(layerString.c_str(), " ");
-	//		ImGui::EndCombo();
-	//	}
-
-	//	ImGui::End();
-	//}
+		ImGui::End();
+	}
 
 
 }

@@ -143,6 +143,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_DROPFILES:
 	{
+		std::vector<std::wstring> nonSkeletons;
+
 		HDROP hDrop;
 		hDrop = (HDROP)wParam;
 		UINT nCnt = DragQueryFile(hDrop, (UINT)-1, NULL, 0);
@@ -151,13 +153,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			UINT nSize;
 			if (0 == (nSize = DragQueryFile(hDrop, nIndex, NULL, 0)))
 				continue;
+			
 
 			TCHAR *pszFileName = new TCHAR[++nSize];
 			if (DragQueryFile(hDrop, nIndex, pszFileName, nSize)) {
-				gApp.IdentifyAndLoadFile(std::wstring(pszFileName));
+				std::wstring file = std::wstring(pszFileName);
+				
+				//Want to process skeletons first
+				if (file.find(L"SKELETON") != std::wstring::npos)
+					gApp.IdentifyAndLoadFile(std::wstring(pszFileName));
+				else
+					nonSkeletons.push_back(std::wstring(pszFileName));
+
+
 			}
 			delete[] pszFileName;
 		}
+		for (auto& file : nonSkeletons)
+			gApp.IdentifyAndLoadFile(file);
 		DragFinish(hDrop);
 	}
 	case WM_INPUT:

@@ -125,6 +125,7 @@ namespace AE
 		uint8_t frameRate = 24;
 		float speedScale = 1.0f;
 		float currentTime = 0.0f;
+		float weight = 1.0f;
 		bool isPlaying = true;
 		bool isLooping = true;
 	};

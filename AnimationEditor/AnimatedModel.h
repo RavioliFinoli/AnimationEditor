@@ -21,6 +21,7 @@ namespace AE
 		uint8_t GetLayerCount();
 		AnimatedModelInformation GetInformation();
 		void Update(float deltaTime);
+		void SetLayerWeight(float weight, int layer);
 	private:
 	
 		AnimationLayer m_MainClipData;
@@ -44,6 +45,7 @@ namespace AE
 		//void UpdateCombined(float deltaTime);
 		//void _computeModelMatricesCombined(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
 		void UpdateAdditive(float deltaTime);
+		void _weightPose(Animation::JointPose& jointPose, float weight);
 	public:
 		float GetProgressNormalized() const;
 	};
