@@ -38,7 +38,7 @@ namespace AE
 		AnimationLayer layer;
 		layer.clip = clip;
 		layer.currentFrame = 0;
-		layer.currentTime = 0.0;
+		layer.currentTime = m_MainClipData.currentTime;
 		layer.frameCount = clip->GetFrameCount();
 		layer.frameRate = 24;
 		layer.isLooping = true;
@@ -151,7 +151,7 @@ namespace AE
 
 		XMMATRIX targetPoseMatrix = _createMatrixFromSRT(targetPose.m_transformation);
 		XMMATRIX differencePoseMatrix = differencePose;
-		XMMATRIX additivePoseMatrix = XMMatrixMultiply(targetPoseMatrix, differencePoseMatrix);
+		XMMATRIX additivePoseMatrix = XMMatrixMultiply(differencePoseMatrix, targetPoseMatrix);
 
 
 		Animation::SRT additivePose = {};

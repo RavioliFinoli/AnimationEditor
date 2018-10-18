@@ -303,6 +303,8 @@ void AnimationEditorApplication::DoGui()
 		ImGui::BulletText("Main Animation: %s", info.mainAnimationName.c_str());
 		ImGui::BulletText("Skeleton: %s", info.skeletonName.c_str());
 		ImGui::BulletText("Frame Count: %d", info.frameCount);
+		ImGui::Separator();
+		ImGui::BulletText("Current framerate: %f", ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
 
@@ -403,7 +405,7 @@ void AnimationEditorApplication::DoGui()
 		{
 			std::string layerString = "Layer " + std::to_string(layer);
 			ImGui::BulletText(layerString.c_str());
-			if (ImGui::SliderFloat("Weight", &weights[layer], 0.0f, 1.0f))
+			if (ImGui::SliderFloat("Weight", &(weights[layer]), 0.0f, 1.0f))
 			{
 				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetLayerWeight(weights[layer], layer);
 			}
