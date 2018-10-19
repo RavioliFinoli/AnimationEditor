@@ -135,6 +135,7 @@ namespace AE
 		std::string skeletonName = "N/A";
 		std::string mainAnimationName = "N/A";
 		int frameCount = 0;
+		float scale = 1.0f;
 	};
 
 	typedef AnimationClipPlaybackData PlaybackData;

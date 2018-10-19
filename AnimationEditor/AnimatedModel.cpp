@@ -80,6 +80,7 @@ namespace AE
 			ami.mainAnimationName = m_MainClipData.clip->GetName();
 		if (m_MainClipData.clip && m_MainClipData.clip->GetSkeleton())
 			ami.skeletonName = m_MainClipData.clip->GetSkeleton()->name;
+		ami.scale = GetScale();
 	
 		return ami;
 	}
@@ -186,10 +187,11 @@ namespace AE
 		layerPosesMultiplied.resize(skeleton->m_jointCount);
 		for (int layer = 0; layer < m_AnimationLayers.size(); layer++)
 		{
+			auto layerIndexAndProgression = _computeIndexAndProgression(deltaTime, &m_AnimationLayers[layer].currentTime, m_AnimationLayers[layer].frameCount);
 			for (int joint = 0; joint < skeleton->m_jointCount; joint++)
 			{
 				//Get the final matrix for this layer and this joint
-				auto thisPoseMatrix = _createMatrixFromSRT(_getPoseFromLayer(m_AnimationLayers[layer], joint, deltaTime).m_transformation);
+				auto thisPoseMatrix = _createMatrixFromSRT(_getPoseFromLayer(m_AnimationLayers[layer], joint, deltaTime, layerIndexAndProgression).m_transformation);
 				layer
 					? layerPosesMultiplied[joint] = XMMatrixMultiply(thisPoseMatrix, layerPosesMultiplied[joint])
 					: layerPosesMultiplied[joint] = thisPoseMatrix;
@@ -201,29 +203,6 @@ namespace AE
 			newPose.m_jointPoses[i] = getAdditivePose(newPose.m_jointPoses[i], layerPosesMultiplied[i]);
 
 		_computeSkinningMatrices(&newPose);
-		//----- old
-
-
-	
-		//auto layerIndexAndProgression = _computeIndexAndProgression(deltaTime, &m_AnimationLayers[0].currentTime, m_AnimationLayers[0].frameCount);
-		//int layerPrevIndex = layerIndexAndProgression.first;
-		//float layerProgression = layerIndexAndProgression.second;
-	
-		//auto& layerSkeletonPoseFirst = m_AnimationLayers[0].clip->GetSkeletonPose(layerPrevIndex);
-	
-
-		//Animation::SkeletonPose layerPose;
-		////init new skeleton pose
-		//{
-		//	newPose.m_jointPoses = std::make_unique<Animation::JointPose[]>(skeleton->m_jointCount);
-		//	for (int i = 0; i < skeleton->m_jointCount; i++)
-		//	{
-		//		newPose.m_jointPoses[i] = getAdditivePose(newPose.m_jointPoses[i], layerSkeletonPoseFirst.m_jointPoses[i]);
-		//	}
-		//}
-	
-		//_computeSkinningMatrices(&newPose, &newPose, 0.0f);
-	
 	}
 	
 	void AnimatedModel::_weightPose(Animation::JointPose& jointPose, float weight)
@@ -237,14 +216,8 @@ namespace AE
 		jointPose = _interpolateJointPose(&zeroPose, &jointPose, weight);
 	}
 
-	Animation::JointPose AnimatedModel::_getPoseFromLayer(AE::AnimationLayer& layer, uint8_t jointIndex, float deltaTime)
+	Animation::JointPose AnimatedModel::_getPoseFromLayer(AE::AnimationLayer& layer, uint8_t jointIndex, float deltaTime, std::pair<int, float>layerIndexAndProgression)
 	{
-		std::pair<int, float> layerIndexAndProgression;
-		if (jointIndex == 0)
-			layerIndexAndProgression = _computeIndexAndProgression(deltaTime, &layer.currentTime, layer.frameCount);
-		else
-			layerIndexAndProgression = _computeIndexAndProgression(deltaTime, layer.currentTime, layer.frameCount);
-
 		int layerPrevIndex = layerIndexAndProgression.first;
 		float layerProgression = layerIndexAndProgression.second;
 

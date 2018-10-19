@@ -85,6 +85,11 @@ namespace AE
 		return m_VertexCount;
 	}
 
+	float Model::GetScale()
+	{
+		return m_Scale.x;
+	}
+
 	void Model::ToggleDrawState()
 	{
 		m_bDraw = !m_bDraw;

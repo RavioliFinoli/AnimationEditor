@@ -6,5 +6,5 @@ struct VS_OUT
 
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
-	return float4(input.col, 1.0f);
+	return float4(normalize(input.col), 1.0f);
 }

@@ -216,14 +216,7 @@ void AnimationEditorApplication::DoGui()
 		}
 
 
-		if (ImGui::Button("Open Difference Clip maker"))
-		{
-			wantsNewDifferenceClip = true;
-		}
-		if (ImGui::Button("Duplicate Model"))
-		{
-			wantsToDuplicate = true;
-		}
+
 
 		ImGui::NewLine();
 		ImGui::Separator();
@@ -253,7 +246,12 @@ void AnimationEditorApplication::DoGui()
 
 			ImGui::Checkbox("Keep Prefix", &keepPrefix);
 		}
+
 		ImGui::Separator();
+		ImGui::Separator();
+
+		ImGui::BulletText("Difference Clips");
+
 		if (ImGui::BeginCombo("Difference Clips", item_current_diffAnimation.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
 		{
 			for (int n = 0; n < gDifferenceClipNames.size(); n++)
@@ -270,10 +268,24 @@ void AnimationEditorApplication::DoGui()
 		}
 		if (ImGui::Button("Add Clip as Layer"))
 		{
-			if (item_current_animated != "None selected")
+			if (item_current_animated != "None selected" && item_current_diffAnimation != "None selected")
 			{
 				m_ModelHandler.GetAnimatedModel(item_current_animated)->AddAnimationLayer(m_AnimationHandler.GetDifferenceClip(item_current_diffAnimation));
 			}
+		}
+		ImGui::Separator();
+		if (ImGui::Button("Open Difference Clip maker"))
+		{
+			wantsNewDifferenceClip = true;
+		}
+
+		ImGui::Separator();
+		ImGui::Separator();
+
+
+		if (ImGui::Button("Duplicate Model"))
+		{
+			wantsToDuplicate = true;
 		}
 
 		ImGui::End();
@@ -283,7 +295,7 @@ void AnimationEditorApplication::DoGui()
 #pragma endregion "Testing 1"
 
 #pragma region "Testing 2"
-	ImGui::Begin("poop 2");
+	ImGui::Begin("Playback");
 	float progress = 0.0f;
 	if (item_current_animated != "None selected")
 		progress = m_ModelHandler.GetAnimatedModel(item_current_animated)->GetProgressNormalized();
@@ -299,7 +311,11 @@ void AnimationEditorApplication::DoGui()
 		std::string mainClipName = "N/A";
 
 		auto info = m_ModelHandler.GetAnimatedModel(item_current_animated)->GetInformation();
-		
+		static float scale = info.scale;
+		if (ImGui::SliderFloat("Scale", &scale, 0.001f, 1.0f))
+		{
+			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetScale(scale);
+		}
 		ImGui::BulletText("Main Animation: %s", info.mainAnimationName.c_str());
 		ImGui::BulletText("Skeleton: %s", info.skeletonName.c_str());
 		ImGui::BulletText("Frame Count: %d", info.frameCount);
@@ -408,6 +424,10 @@ void AnimationEditorApplication::DoGui()
 			if (ImGui::SliderFloat("Weight", &(weights[layer]), 0.0f, 1.0f))
 			{
 				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetLayerWeight(weights[layer], layer);
+			}
+			if (ImGui::Button("Remove Layer"))
+			{
+				m_ModelHandler.GetAnimatedModel(item_current_animated)->PopAnimationLayer(layer);
 			}
 		}
 

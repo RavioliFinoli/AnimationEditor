@@ -30,7 +30,7 @@ namespace AE
 		std::vector<DirectX::XMFLOAT4X4A> m_SkinningMatrices;
 		std::vector<DirectX::XMFLOAT4X4A> m_ModelMatrices;
 	
-		Animation::JointPose _getPoseFromLayer(AE::AnimationLayer& layer, uint8_t jointIndex, float deltaTime);
+		Animation::JointPose _getPoseFromLayer(AE::AnimationLayer& layer, uint8_t jointIndex, float deltaTime, std::pair<int, float>layerIndexAndProgression);
 		void _computeSkinningMatrices(Animation::SkeletonPose* firstPose, Animation::SkeletonPose* secondPose, float weight);
 		void _computeSkinningMatrices(Animation::SkeletonPose * preInterpolatedPose);
 		void _computeSkinningMatrices(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
@@ -42,6 +42,7 @@ namespace AE
 		Animation::JointPose _interpolateJointPose(Animation::JointPose * firstPose, Animation::JointPose * secondPose, float weight);
 		std::pair<uint16_t, float> _computeIndexAndProgression(float deltaTime, float currentTime, uint16_t frameCount);
 		std::pair<uint16_t, float> _computeIndexAndProgression(float deltaTime, float* currentTime, uint16_t frameCount);
+		void BakeNewClip();
 		//void UpdateCombined(float deltaTime);
 		//void _computeModelMatricesCombined(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
 		void UpdateAdditive(float deltaTime);

@@ -27,7 +27,7 @@ namespace AE
 		DirectX::XMFLOAT4X4A GetWorldMatrix();
 		const ComPtr<ID3D11Buffer>& GetVertexBuffer();
 		uint32_t GetVertexCount();
-		
+		float GetScale();
 		DirectX::XMFLOAT4X4A m_WorldMatrix;
 		DirectX::XMFLOAT4A m_Translation;
 		DirectX::XMFLOAT4A m_RotationQuaternion;
