@@ -429,6 +429,10 @@ void AnimationEditorApplication::DoGui()
 			{
 				m_ModelHandler.GetAnimatedModel(item_current_animated)->PopAnimationLayer(layer);
 			}
+			if (ImGui::Button("Export.."))
+			{
+				m_ModelHandler.GetAnimatedModel(item_current_animated)->BakeNewClip(layer, false);
+			}
 		}
 
 		ImGui::End();

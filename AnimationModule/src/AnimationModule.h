@@ -9,6 +9,44 @@
 
 namespace Animation
 {
+	/*
+	//Flips the Z axis before writing
+	void appendFloat4AsDirectXVector(std::ofstream& file, const Vec4 vec)
+	{
+		if (!file.is_open())
+			return;
+
+		Vec4 v = vec;
+		v.z *= -1.0f;
+
+		file.write((const char*)&v, sizeof(Vec4));
+	}
+	//Flips X and Y components before writing
+	void appendFloat4AsDirectXQuaternion(std::ofstream& file, const Vec4 vec)
+	{
+		if (!file.is_open())
+			return;
+
+		Vec4 v = vec;
+		v.x *= -1.0f;
+		v.y *= -1.0f;
+
+		file.write((const char*)&v, sizeof(Vec4));
+	}
+	/// Writes each Vec4 component of the Transform (order is T, R, S)
+	void appendTransform(std::ofstream& file, const DecomposedTransform transform)
+	{
+		if (!file.is_open())
+			return;
+
+		/// Write each vector (T, R, S) (R is quaternion)
+		appendFloat4AsDirectXVector(file, transform.translation);
+		appendFloat4AsDirectXQuaternion(file, transform.rotation);
+		appendFloat4(file, transform.scale);
+	}*/
+
+
+
 #pragma region AnimatedModelClassStructs
 	// Struct containing rotation, translation and scale as XMFLOAT4A, in that order
 	struct SRT
@@ -22,6 +60,17 @@ namespace Animation
 		SRT(const MyLibrary::DecomposedTransform& transform);
 		bool operator==(const SRT& other);
 	};
+	inline void appendAsDirectXTransform(std::ofstream& file, SRT transform)
+	{
+		transform.m_translation.z *= -1.0f;
+		transform.m_rotationQuaternion.x *= -1.f;
+		transform.m_rotationQuaternion.y *= -1.f;
+
+		file.write((const char*)&transform.m_translation, sizeof(DirectX::XMFLOAT4A));
+		file.write((const char*)&transform.m_rotationQuaternion, sizeof(DirectX::XMFLOAT4A));
+		file.write((const char*)&transform.m_scale, sizeof(DirectX::XMFLOAT4A));
+
+	}
 
 	// Struct containing a joint as XMFLOAT4X4A and a parent index as an int16_t, in that order
 	struct Joint

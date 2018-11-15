@@ -22,6 +22,7 @@ namespace AE
 		AnimatedModelInformation GetInformation();
 		void Update(float deltaTime);
 		void SetLayerWeight(float weight, int layer);
+		void BakeNewClip(uint8_t layer, bool bakeWeight = false);
 	private:
 	
 		AnimationLayer m_MainClipData;
@@ -42,7 +43,6 @@ namespace AE
 		Animation::JointPose _interpolateJointPose(Animation::JointPose * firstPose, Animation::JointPose * secondPose, float weight);
 		std::pair<uint16_t, float> _computeIndexAndProgression(float deltaTime, float currentTime, uint16_t frameCount);
 		std::pair<uint16_t, float> _computeIndexAndProgression(float deltaTime, float* currentTime, uint16_t frameCount);
-		void BakeNewClip();
 		//void UpdateCombined(float deltaTime);
 		//void _computeModelMatricesCombined(Animation::SkeletonPose* firstPose1, Animation::SkeletonPose* secondPose1, float weight1, Animation::SkeletonPose* firstPose2, Animation::SkeletonPose* secondPose2, float weight2);
 		void UpdateAdditive(float deltaTime);

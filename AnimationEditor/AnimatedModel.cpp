@@ -394,6 +394,36 @@ namespace AE
 		return std::make_pair(static_cast<uint16_t>(prevIndex), progression);
 	}
 	
+	void AnimatedModel::BakeNewClip(uint8_t layer, bool bakeWeight /*= false*/)
+	{
+		auto clip = std::make_shared<AnimationClip>();
+
+		AE::AnimationLayer layerData = m_AnimationLayers.at(layer);
+		auto rawData = layerData.clip->GetAnimationData();
+		
+		std::string fileName = layerData.clip->GetName();
+		fileName += ".bin";
+		std::ofstream file(fileName, std::ofstream::binary);
+		assert(file.is_open());
+		uint32_t frameCount = rawData->m_frameCount;
+		file.write((const char*)&frameCount, sizeof(uint32_t));
+		//For each joint, output keys
+		for (int key = 0; key < rawData->m_frameCount; key++)
+		{
+			for (int joint = 0; joint < layerData.clip->GetSkeleton()->m_jointCount; joint++)
+			{
+				//Animation::JointPose thisPose = rawData->m_skeletonPoses[key].m_jointPoses[joint];
+
+				//if (bakeWeight)
+				//	_weightPose(thisPose, layerData.weight);
+
+				appendAsDirectXTransform(file, rawData->m_skeletonPoses[key].m_jointPoses[joint].m_transformation);
+			}
+		}
+
+		file.close();
+	}
+
 	float AnimatedModel::GetProgressNormalized() const
 	{
 		return m_MainClipData.currentTime / (1.0 / 24.0 * (m_MainClipData.frameCount - 1));
