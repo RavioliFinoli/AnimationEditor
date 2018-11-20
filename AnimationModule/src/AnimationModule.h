@@ -98,6 +98,7 @@ namespace Animation
 
 		JointPose() {};
 		JointPose(const SRT& srt);
+		JointPose(const DirectX::XMFLOAT4X4A& matrix);
 	};
 
 	// Struct containing an array of JointPose structs as a unique_ptr

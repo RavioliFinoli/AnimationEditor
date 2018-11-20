@@ -181,6 +181,20 @@ Animation::JointPose::JointPose(const SRT& srt)
 	m_transformation = srt;
 }
 
+Animation::JointPose::JointPose(const DirectX::XMFLOAT4X4A& matrix)
+{
+	using namespace DirectX;
+
+	auto mat = XMLoadFloat4x4A(&matrix);
+	XMVECTOR s{};
+	XMVECTOR r{};
+	XMVECTOR t{};
+	XMMatrixDecompose(&s, &r, &t, mat);
+	XMStoreFloat4A(&m_transformation.m_scale, s);
+	XMStoreFloat4A(&m_transformation.m_rotationQuaternion, r);
+	XMStoreFloat4A(&m_transformation.m_translation, t);
+}
+
 Animation::AnimationClip::AnimationClip(const MyLibrary::AnimationFromFileStefan& animation, std::shared_ptr<Skeleton> skeleton)
 {
 	m_skeleton = skeleton;

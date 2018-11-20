@@ -53,6 +53,5 @@ namespace AE
 
 	typedef std::shared_ptr<AE::AnimatedModel> SharedAnimatedModel;
 	typedef std::unordered_map<std::string, SharedAnimatedModel> AnimatedModelMap;
-
 }
 

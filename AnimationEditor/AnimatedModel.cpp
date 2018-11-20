@@ -428,5 +428,6 @@ namespace AE
 	{
 		return m_MainClipData.currentTime / (1.0 / 24.0 * (m_MainClipData.frameCount - 1));
 	}
+
 }
 

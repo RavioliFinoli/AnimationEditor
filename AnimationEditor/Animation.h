@@ -145,8 +145,10 @@ namespace AE
 #pragma region "Stuff"
 	AE::SharedAnimationData MakeNewDifferenceClip(AE::SharedAnimationData sourceClip, AE::SharedAnimationData differenceClip);
 	AE::SharedAnimationData MakeNewDifferenceClip(AE::SharedAnimationClip sourceClip, AE::SharedAnimationClip referenceClip);
-	DirectX::XMMATRIX GetBindpose(DirectX::XMFLOAT4X4A inverseBindPose);
+	AE::SharedAnimationData MakeNewDifferenceClip(AE::SharedAnimationData sourceClip, AE::SharedSkeletonData skeleton);
+	AE::SharedAnimationData MakeNewDifferenceClip(AE::SharedAnimationClip sourceClip, AE::SharedSkeleton skeleton);
 	DirectX::XMMATRIX GetBindpose(DirectX::XMMATRIX inverseBindPose);
+	DirectX::XMFLOAT4X4A GetBindpose(DirectX::XMFLOAT4X4A inverseBindPose);
 	void BakeOntoBindpose(AE::SharedDifferenceClip animation);
 #pragma endregion "Stuff"
 }

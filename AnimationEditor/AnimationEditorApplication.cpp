@@ -367,7 +367,11 @@ void AnimationEditorApplication::DoGui()
 			AE::SharedDifferenceClip clip = std::make_shared<AE::DifferenceClip>();
 			auto source = m_AnimationHandler.GetRawClip(item_current_animationSource);
 			auto reference = m_AnimationHandler.GetRawClip(item_current_animationRef);
-			clip->SetAnimationData(MakeNewDifferenceClip(source, reference));
+
+			reference 
+				? clip->SetAnimationData(MakeNewDifferenceClip(source, reference))
+				: clip->SetAnimationData(MakeNewDifferenceClip(source, m_AnimationHandler.GetSkeleton(item_current_skeleton)));
+
 			clip->SetName(source->GetName() + "_DIFF");
 			//m_ModelHandler.GetAnimatedModel(item_current_animated)->AddAnimationLayer(clip);
 			//BakeOntoBindpose(clip);

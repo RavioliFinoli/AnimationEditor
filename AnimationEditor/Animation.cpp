@@ -222,12 +222,18 @@ AE::SharedAnimationData AE::MakeNewDifferenceClip(AE::SharedAnimationClip source
 	return MakeNewDifferenceClip(sourceClip->GetAnimationData(), referenceClip->GetAnimationData());
 }
 
-DirectX::XMMATRIX AE::GetBindpose(DirectX::XMFLOAT4X4A inverseBindPose)
+AE::SharedAnimationData AE::MakeNewDifferenceClip(SharedAnimationClip sourceClip, SharedSkeleton skeleton)
+{
+	return MakeNewDifferenceClip(sourceClip->GetAnimationData(), skeleton);
+}
+
+DirectX::XMFLOAT4X4A AE::GetBindpose(DirectX::XMFLOAT4X4A inverseBindPose)
 {
 	using namespace DirectX;
+	XMFLOAT4X4A mat{};
 
-	return XMMatrixInverse(nullptr, XMLoadFloat4x4A(&inverseBindPose));
-
+	XMStoreFloat4x4A(&mat, XMMatrixInverse(nullptr, XMLoadFloat4x4A(&inverseBindPose)));
+	return mat;
 }
 
 DirectX::XMMATRIX AE::GetBindpose(DirectX::XMMATRIX inverseBindPose)
@@ -253,7 +259,7 @@ void AE::BakeOntoBindpose(AE::SharedDifferenceClip animation)
 		{
 			if (skelPose == 0) //get bindposes on first iteration
 			{
-				bindPoses.push_back(GetBindpose(skeleton->m_joints[joint].m_inverseBindPose));
+				bindPoses.push_back(GetBindpose(XMLoadFloat4x4A(&skeleton->m_joints[joint].m_inverseBindPose)));
 				if (skeleton->m_joints[joint].parentIndex >= 0)
 				{
 					bindPoses.back() = XMMatrixMultiply(bindPoses.back(), XMLoadFloat4x4A(&skeleton->m_joints[skeleton->m_joints[joint].parentIndex].m_inverseBindPose));
@@ -294,6 +300,44 @@ AE::SharedAnimationData AE::MakeNewDifferenceClip(AE::SharedAnimationData source
 		{
 			auto sourcePose = sourceClip->m_skeletonPoses[frame].m_jointPoses[jointPose];
 			auto referencePose = referenceClip->m_skeletonPoses[frame].m_jointPoses[jointPose];
+			auto differencePose = getDifferencePose(sourcePose, referencePose);
+
+			animationToReturn->m_skeletonPoses[frame].m_jointPoses[jointPose] = differencePose;
+		}
+	}
+
+	return animationToReturn;
+}
+
+
+
+AE::SharedAnimationData AE::MakeNewDifferenceClip(AE::SharedAnimationData sourceClip, AE::SharedSkeletonData skeleton)
+{
+	using namespace DirectX;
+	AE::SharedAnimationData animationToReturn = std::make_shared<Animation::AnimationClip>();
+	animationToReturn->m_frameCount = sourceClip->m_frameCount;
+	animationToReturn->m_framerate = sourceClip->m_framerate;
+	animationToReturn->m_skeleton = sourceClip->m_skeleton;
+	animationToReturn->m_skeletonPoses = std::make_unique<Animation::SkeletonPose[]>(animationToReturn->m_frameCount);
+
+	//Go through each skeleton pose and set new difference pose for each joint
+	for (int frame = 0; frame < animationToReturn->m_frameCount; frame++)
+	{
+		//Init joint pose array for this skeleton pose
+		animationToReturn->m_skeletonPoses[frame].m_jointPoses = std::make_unique<Animation::JointPose[]>(animationToReturn->m_skeleton->m_jointCount);
+
+		//Go through each joint and assign the difference pose
+		for (int jointPose = 0; jointPose < animationToReturn->m_skeleton->m_jointCount; jointPose++)
+		{
+			XMFLOAT4X4A thisJointBindPose{};
+			auto matrix = GetBindpose(XMLoadFloat4x4A(&skeleton->m_joints[jointPose].m_inverseBindPose));
+			auto anothermatrix = GetBindpose(XMLoadFloat4x4A(&skeleton->m_joints[jointPose].m_inverseBindPose));
+			if (jointPose != 0)
+				anothermatrix = XMMatrixMultiply(matrix, XMLoadFloat4x4A(&skeleton->m_joints[skeleton->m_joints[jointPose].parentIndex].m_inverseBindPose));
+			XMStoreFloat4x4A(&thisJointBindPose, anothermatrix);
+			//XMStoreFloat4x4A(&thisJointBindPose, XMMatrixInverse(nullptr, XMLoadFloat4x4A(&skeleton->m_joints[jointPose].m_inverseBindPose)));
+			auto sourcePose = sourceClip->m_skeletonPoses[frame].m_jointPoses[jointPose];
+			auto referencePose = Animation::JointPose(thisJointBindPose);
 			auto differencePose = getDifferencePose(sourcePose, referencePose);
 
 			animationToReturn->m_skeletonPoses[frame].m_jointPoses[jointPose] = differencePose;
