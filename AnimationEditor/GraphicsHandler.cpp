@@ -132,7 +132,6 @@ void AE::GraphicsHandler::_initInputLayoutsAndShaders()
 		// compilation failed?
 		if (FAILED(result))
 		{
-			exit(-9);
 			if (errorBlob)
 			{
 				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
@@ -141,7 +140,7 @@ void AE::GraphicsHandler::_initInputLayoutsAndShaders()
 			}
 			if (pVS)
 				pVS->Release();
-
+			exit(-9);
 		}
 
 		AEApp::gDevice->CreateVertexShader(
@@ -168,7 +167,6 @@ void AE::GraphicsHandler::_initInputLayoutsAndShaders()
 		// compilation failed?
 		if (FAILED(result))
 		{
-			exit(-9);
 			if (errorBlob)
 			{
 				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
@@ -177,6 +175,7 @@ void AE::GraphicsHandler::_initInputLayoutsAndShaders()
 			}
 			if (pAnimVS)
 				pAnimVS->Release();
+			exit(-9);
 
 		}
 
@@ -323,6 +322,7 @@ void AE::GraphicsHandler::_initInputLayoutsAndShaders()
 			}
 			if (pPS)
 				pPS->Release();
+			exit(-9);
 
 		}
 

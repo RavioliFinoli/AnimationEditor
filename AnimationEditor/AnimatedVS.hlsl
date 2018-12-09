@@ -1,7 +1,6 @@
 cbuffer PerFrame : register(b0)
 {
 	row_major float4x4 viewProj;
-	float4 camPosition;
 }
 
 cbuffer PerObject : register(b1)
@@ -23,7 +22,8 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
 	float4 pos : SV_POSITION;
-	float3 col : COLOR;
+	float4 posW : POSITION;
+	float4 norW : NORMAL;
 };
 
 VS_OUTPUT VS_main(VS_INPUT input)
@@ -48,14 +48,14 @@ VS_OUTPUT VS_main(VS_INPUT input)
 		{
 			//TODO: cbuffer gWorld
 			position += weights[i] * mul(float4(input.pos.xyz, 1.0f), skinningMatrices[input.boneIndices[i] - 1]).xyz;
-			normal += weights[i] * mul(input.nor,
+			normal += weights[i] * mul(float4(input.nor, 0.0f),
 				skinningMatrices[input.boneIndices[i] - 1]).xyz;
 		}
 	}
 
 	normal = normalize(normal);
-
-	output.pos = mul(float4(position, 1.0f), mul(world, viewProj));
-	output.col = mul(float4(normal, 0.0f), world).xyz;
+	output.posW = mul(float4(position, 1.0f), world);
+	output.norW = float4(mul(float4(normal, 0.0f), world).xyz, 0.0f);
+	output.pos = mul(float4(output.posW.xyz, 1.0f), viewProj);
 	return output;
 }

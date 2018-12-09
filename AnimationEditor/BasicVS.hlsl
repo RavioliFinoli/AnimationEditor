@@ -9,13 +9,13 @@ struct VS_IN
 struct VS_OUT
 {
 	float4 pos : SV_POSITION;
-	float3 col : COLOR;
+	float4 posW : POSITION;
+	float4 norW : NORMAL;
 };
 
 cbuffer PerFrame : register(b0)
 {
 	row_major float4x4 viewProj;
-	float4 camPosition; 
 }
 
 cbuffer PerObject : register(b1)
@@ -28,8 +28,9 @@ VS_OUT VS_main(VS_IN input)
 	VS_OUT output;
 
 	float4 worldPos = mul(float4(input.pos, 1.0f), world);
+	output.posW = worldPos;
 	float4 worldNor = mul(float4(input.nor, 1.0f), world);
+	output.norW = worldNor;
 	output.pos = mul(worldPos, viewProj);
-	output.col = mul(worldNor, viewProj);
 	return output;
 }

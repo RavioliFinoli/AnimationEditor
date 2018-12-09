@@ -11,6 +11,8 @@ ComPtr<ID3D11Device> AnimationEditorApplication::gDevice = nullptr;
 ComPtr<ID3D11DeviceContext> AnimationEditorApplication::gDeviceContext = nullptr;
 ComPtr<IDXGISwapChain> AnimationEditorApplication::gSwapChain = nullptr;
 ComPtr<ID3D11RenderTargetView> AnimationEditorApplication::gBackbufferRTV = nullptr;
+ComPtr<ID3D11DepthStencilView> AnimationEditorApplication::gDepthStencilView = nullptr;
+ComPtr<ID3D11DepthStencilState> AnimationEditorApplication::gDepthStencilState = nullptr;
 
 
 Camera gCamera;
@@ -22,7 +24,7 @@ std::vector<std::string> gAnimationClipNames;
 std::vector<std::string> gSkeletonNames;
 std::vector<std::string> gDifferenceClipNames;
 
-HRESULT CreateDirect3DContext(HWND wndHandle)
+HRESULT AnimationEditorApplication::CreateDirect3DContext(HWND wndHandle)
 {
 	// create a struct to hold information about the swap chain
 	DXGI_SWAP_CHAIN_DESC scd;
@@ -51,6 +53,8 @@ HRESULT CreateDirect3DContext(HWND wndHandle)
 		AEApp::gDevice.GetAddressOf(),
 		NULL,
 		AEApp::gDeviceContext.GetAddressOf());
+
+	SetDepthStencil();
 
 	if (SUCCEEDED(hr))
 	{
@@ -111,12 +115,17 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 		return hr;
 
 	SetViewport();
+
 	m_ModelHandler.Init();
 
 	///Init cbuffers
-	m_PerFrameBuffer          = std::make_unique<ConstantBuffer>(0, sizeof(PerFrameData));
+	m_PerFrameVSBuffer		  = std::make_unique<ConstantBuffer>(0, sizeof(PerFrameVSData));
+	m_PerFramePSBuffer		  = std::make_unique<ConstantBuffer>(0, sizeof(PerFrameVSData));
 	m_PerStaticObjectBuffer   = std::make_unique<ConstantBuffer>(1, sizeof(PerStaticObjectData));
 	m_PerAnimatedObjectBuffer = std::make_unique<ConstantBuffer>(1, sizeof(PerAnimatedObjectData));
+
+
+
 
 
 	return hr;
@@ -320,7 +329,7 @@ void AnimationEditorApplication::DoGui()
 		pyr.z = DirectX::XMConvertToDegrees(pyr.z);
 
 
-		if (ImGui::SliderFloat("Scale", &scale, 0.001f, 1.0f))
+		if (ImGui::SliderFloat("Scale", &scale, 0.001f, 10.0f))
 		{
 			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetScale(scale);
 		}
@@ -496,6 +505,7 @@ void AnimationEditorApplication::Update()
 void AnimationEditorApplication::Render()
 {
 	///Render animated models:
+	gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), gDepthStencilView.Get());
 
 	const float clearcolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
 	auto staticModels = m_ModelHandler.GetStaticModelMap();
@@ -503,6 +513,7 @@ void AnimationEditorApplication::Render()
 
 	gDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gDeviceContext->ClearRenderTargetView(gBackbufferRTV.Get(), clearcolor);
+	gDeviceContext->ClearDepthStencilView(gDepthStencilView.Get(), D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
 
 	gDeviceContext->VSSetShader(m_ModelHandler.GetStaticModelVertexShader().Get(), nullptr, 0);
 	gDeviceContext->HSSetShader(nullptr, nullptr, 0);
@@ -512,12 +523,15 @@ void AnimationEditorApplication::Render()
 
 	gDeviceContext->IASetInputLayout(m_ModelHandler.GetStaticModelInputLayout().Get());
 
-	PerFrameData pf = {};
-	pf.viewProjectionMatrix = gCamera.GetViewProjectionMatrix();
-	pf.cameraPosition = gCamera.GetPosition();
+	PerFrameVSData pfVS = {};
+	pfVS.viewProjectionMatrix = gCamera.GetViewProjectionMatrix();
+	PerFramePSData pfPS = {};
+	pfPS.cameraPosition = gCamera.GetPosition();
 
-	m_PerFrameBuffer->SetData(&pf);
-	m_PerFrameBuffer->BindToVertexShader();
+	m_PerFrameVSBuffer->SetData(&pfVS);
+	m_PerFramePSBuffer->SetData(&pfPS);
+	m_PerFrameVSBuffer->BindToVertexShader();
+	m_PerFramePSBuffer->BindToPixelShader();
 	UINT32 vertexSize = sizeof(float) * 11;
 	UINT32 offset = 0;
 	for (auto& model : staticModels)
@@ -681,5 +695,65 @@ void AnimationEditorApplication::RenameRawClip(std::string oldKey, std::string n
 AE::SharedAnimatedModel AnimationEditorApplication::GetAnimatedFromKey(std::string key)
 {
 	return m_ModelHandler.GetAnimatedModel(key);
+}
+
+void AnimationEditorApplication::SetDepthStencil()
+{
+	//Describe our Depth/Stencil Buffer
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+
+	depthStencilDesc.Width = 1280;
+	depthStencilDesc.Height = 720;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+
+	descDSV.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+
+	D3D11_DEPTH_STENCIL_DESC dsDesc;
+	ZeroMemory(&dsDesc, sizeof(dsDesc));
+
+	// Depth test parameters
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+	// Stencil test parameters
+	dsDesc.StencilEnable = true;
+	dsDesc.StencilReadMask = 0xFF;
+	dsDesc.StencilWriteMask = 0xFF;
+
+	// Stencil operations if pixel is front-facing
+	dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Stencil operations if pixel is back-facing
+	dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	HRESULT hr = gDevice->CreateDepthStencilState(&dsDesc, gDepthStencilState.ReleaseAndGetAddressOf());
+
+	ID3D11Texture2D* tex = nullptr;
+
+	hr = gDevice->CreateTexture2D(&depthStencilDesc, NULL, &tex);
+	hr = gDevice->CreateDepthStencilView(tex, &descDSV, gDepthStencilView.ReleaseAndGetAddressOf());
+
+
 }
 

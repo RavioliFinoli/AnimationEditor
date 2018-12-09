@@ -18,9 +18,13 @@ extern std::vector<std::string> gAnimationClipNames;
 extern std::vector<std::string> gSkeletonNames;
 extern std::vector<std::string> gDifferenceClipNames;
 
-struct PerFrameData 
+struct PerFrameVSData 
 {
 	DirectX::XMFLOAT4X4A viewProjectionMatrix = {};
+};
+
+struct PerFramePSData
+{
 	DirectX::XMFLOAT4A cameraPosition = {};
 };
 
@@ -52,6 +56,9 @@ public:
 	static ComPtr<ID3D11DeviceContext> gDeviceContext;
 	static ComPtr<IDXGISwapChain> gSwapChain;
 	static ComPtr<ID3D11RenderTargetView> gBackbufferRTV;
+	static ComPtr<ID3D11DepthStencilView> gDepthStencilView;
+	static ComPtr<ID3D11DepthStencilState> gDepthStencilState;
+	
 	bool LoadAssetsInDirectory(std::string dir);
 	AE::SharedSkeleton LoadSkeletonFilesInDirectory(std::string dir);
 	bool LoadAnimationFilesInDirectory(std::string dir, AE::SharedSkeleton skeleton);
@@ -62,14 +69,19 @@ private:
 	AE::AnimationHandler m_AnimationHandler;
 	AE::GraphicsHandler m_ModelHandler;
 
-	std::unique_ptr<ConstantBuffer> m_PerFrameBuffer;
+	std::unique_ptr<ConstantBuffer> m_PerFrameVSBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerStaticObjectBuffer;
 	std::unique_ptr<ConstantBuffer> m_PerAnimatedObjectBuffer;
+	std::unique_ptr<ConstantBuffer> m_PerFramePSBuffer;
+
 	void RenameAnimatedModel(std::string oldKey, std::string newKey);
 	void RenameSkeleton(std::string oldKey, std::string newKey);
 	void RenameRawClip(std::string oldKey, std::string newKey);
 public:
 	AE::SharedAnimatedModel GetAnimatedFromKey(std::string key);
+private:
+	void SetDepthStencil();
+	HRESULT CreateDirect3DContext(HWND wndHandle);
 };
 
 typedef AnimationEditorApplication AEApp;
