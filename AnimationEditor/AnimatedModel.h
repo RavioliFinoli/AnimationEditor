@@ -49,6 +49,8 @@ namespace AE
 		void _weightPose(Animation::JointPose& jointPose, float weight);
 	public:
 		float GetProgressNormalized() const;
+	private:
+
 	};
 
 	typedef std::shared_ptr<AE::AnimatedModel> SharedAnimatedModel;

@@ -125,6 +125,7 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 #pragma region "ImGui"
 void AnimationEditorApplication::DoGui()
 {
+	using namespace DirectX;
 #pragma region "Testing 1"
 	static bool wantsNewDifferenceClip = false;
 	static bool wantsToDuplicate = false;
@@ -310,12 +311,41 @@ void AnimationEditorApplication::DoGui()
 		std::string skeletonName = "N/A";
 		std::string mainClipName = "N/A";
 
+		//Get current model info
 		auto info = m_ModelHandler.GetAnimatedModel(item_current_animated)->GetInformation();
 		static float scale = info.scale;
+		XMFLOAT4 pyr = info.pitchYawRoll;
+		pyr.x = DirectX::XMConvertToDegrees(pyr.x);
+		pyr.y = DirectX::XMConvertToDegrees(pyr.y);
+		pyr.z = DirectX::XMConvertToDegrees(pyr.z);
+
+
 		if (ImGui::SliderFloat("Scale", &scale, 0.001f, 1.0f))
 		{
 			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetScale(scale);
 		}
+		if (ImGui::SliderFloat("Pitch", &pyr.x, -180.0f, 180.0f))
+		{
+			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetRotation(
+				XMConvertToRadians(pyr.x),
+				XMConvertToRadians(pyr.y),
+				XMConvertToRadians(pyr.z));
+		}
+		if (ImGui::SliderFloat("Yaw", &pyr.y, -180.0f, 180.0f))
+		{
+			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetRotation(
+				XMConvertToRadians(pyr.x),
+				XMConvertToRadians(pyr.y),
+				XMConvertToRadians(pyr.z));
+		}
+		if (ImGui::SliderFloat("Roll", &pyr.z, -180.0f, 180.0f))
+		{
+			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetRotation(
+				XMConvertToRadians(pyr.x),
+				XMConvertToRadians(pyr.y),
+				XMConvertToRadians(pyr.z));
+		}
+
 		ImGui::BulletText("Main Animation: %s", info.mainAnimationName.c_str());
 		ImGui::BulletText("Skeleton: %s", info.skeletonName.c_str());
 		ImGui::BulletText("Frame Count: %d", info.frameCount);

@@ -81,6 +81,8 @@ namespace AE
 		if (m_MainClipData.clip && m_MainClipData.clip->GetSkeleton())
 			ami.skeletonName = m_MainClipData.clip->GetSkeleton()->name;
 		ami.scale = GetScale();
+		
+		ami.pitchYawRoll = GetPitchYawRoll();
 	
 		return ami;
 	}
@@ -428,6 +430,5 @@ namespace AE
 	{
 		return m_MainClipData.currentTime / (1.0 / 24.0 * (m_MainClipData.frameCount - 1));
 	}
-
 }
 

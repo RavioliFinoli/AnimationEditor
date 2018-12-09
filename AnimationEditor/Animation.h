@@ -136,6 +136,7 @@ namespace AE
 		std::string mainAnimationName = "N/A";
 		int frameCount = 0;
 		float scale = 1.0f;
+		DirectX::XMFLOAT4A pitchYawRoll{0.0, 0.0, 0.0, 0.0};
 	};
 
 	typedef AnimationClipPlaybackData PlaybackData;

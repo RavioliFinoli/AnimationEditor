@@ -19,6 +19,7 @@ namespace AE
 	
 		void SetPosition(DirectX::XMFLOAT4A newPosition);
 		void SetRotation(DirectX::XMFLOAT4A newRotation);
+		void SetRotation(float pitch, float yaw, float roll);
 		void SetScale(float newScale); //Uniform scale
 		void SetVertexBuffer(const ComPtr<ID3D11Buffer>& buffer);
 		void SetVertexCount(uint32_t count);
@@ -28,10 +29,12 @@ namespace AE
 		const ComPtr<ID3D11Buffer>& GetVertexBuffer();
 		uint32_t GetVertexCount();
 		float GetScale();
+		DirectX::XMFLOAT4A GetPitchYawRoll();
 		DirectX::XMFLOAT4X4A m_WorldMatrix;
-		DirectX::XMFLOAT4A m_Translation;
-		DirectX::XMFLOAT4A m_RotationQuaternion;
-		DirectX::XMFLOAT4A m_Scale;
+		DirectX::XMFLOAT4A m_Translation{ 0.0, 0.0, 0.0, 1.0 };
+		DirectX::XMFLOAT4A m_RotationQuaternion{0.0, 0.0, 0.0, 0.0};
+		DirectX::XMFLOAT4A m_RotationPitchYawRoll{ 0.0, 0.0, 0.0, 0.0 };
+		DirectX::XMFLOAT4A m_Scale{ 1.0, 1.0, 1.0, 0.0 };
 	
 	private:
 		ComPtr<ID3D11Buffer> m_VertexBuffer;

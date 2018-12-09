@@ -38,6 +38,14 @@ namespace AE
 		m_Translation = newPosition;
 	}
 	
+	void Model::SetRotation(float pitch, float yaw, float roll)
+	{
+		using namespace DirectX;
+
+		m_RotationPitchYawRoll = XMFLOAT4A(pitch, yaw, roll, 0.0);
+		XMStoreFloat4A(&m_RotationQuaternion, XMQuaternionRotationRollPitchYaw(pitch, yaw, roll));
+	}
+
 	void Model::SetRotation(DirectX::XMFLOAT4A newRotation)
 	{
 		m_RotationQuaternion = newRotation;
@@ -88,6 +96,11 @@ namespace AE
 	float Model::GetScale()
 	{
 		return m_Scale.x;
+	}
+
+	DirectX::XMFLOAT4A Model::GetPitchYawRoll()
+	{
+		return m_RotationPitchYawRoll;
 	}
 
 	void Model::ToggleDrawState()
