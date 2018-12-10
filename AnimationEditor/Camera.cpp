@@ -6,7 +6,7 @@ const DirectX::XMFLOAT4A default_right = { 1.0f, 0.0f, 0.0f, 0.0f };
 Camera::Camera()
 {
 	using namespace DirectX;
-	XMStoreFloat4x4A(&m_ProjectionMatrix, XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4 * 1.5f, 1.7777777f, 0.1f, 100.0f));
+	XMStoreFloat4x4A(&m_ProjectionMatrix, XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4 * 1.5f, 1.7777777f, 0.2f, 100.0f));
 	m_CameraPosition = { 0.0f, 3.0, -8.0f, 1.0f };
 }
 
@@ -37,8 +37,8 @@ void Camera::SetPitchYaw(float pitch, float yaw)
 
 void Camera::IncreasePitchYaw(float pitch, float yaw)
 {
-	m_Pitch += pitch;
-	m_Yaw += yaw;
+	//m_Pitch += pitch;
+	//m_Yaw += yaw;
 }
 
 void Camera::SetPitch(float pitch)

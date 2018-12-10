@@ -37,14 +37,14 @@ HRESULT AnimationEditorApplication::CreateDirect3DContext(HWND wndHandle)
 	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;     // use 32-bit color
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;      // how swap chain is to be used
 	scd.OutputWindow = wndHandle;                           // the window to be used
-	scd.SampleDesc.Count = 4;                               // how many multi-samples
+	scd.SampleDesc.Count = 1;                               // how many multi-samples
 	scd.Windowed = TRUE;                                    // windowed/full-screen mode
 
 	// create a device, device context and swap chain using the information in the scd struct
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
-		NULL,
+		D3D11_CREATE_DEVICE_DEBUG,
 		NULL,
 		NULL,
 		D3D11_SDK_VERSION,
@@ -65,9 +65,8 @@ HRESULT AnimationEditorApplication::CreateDirect3DContext(HWND wndHandle)
 		// use the back buffer address to create the render target
 		AEApp::gDevice->CreateRenderTargetView(pBackBuffer, NULL, AEApp::gBackbufferRTV.GetAddressOf());
 		pBackBuffer->Release();
-
+		AEApp::gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), AEApp::gDepthStencilView.Get());
 		// set the render target as the back buffer
-		AEApp::gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), NULL);
 	}
 	return hr;
 }
@@ -505,6 +504,7 @@ void AnimationEditorApplication::Update()
 void AnimationEditorApplication::Render()
 {
 	///Render animated models:
+	assert(gDepthStencilView.Get() != nullptr);
 	gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), gDepthStencilView.Get());
 
 	const float clearcolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
@@ -570,6 +570,7 @@ void AnimationEditorApplication::Render()
 			gDeviceContext->Draw(vertexCount, 0);
 		}
 	}
+	AEApp::gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), nullptr);
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
@@ -747,12 +748,12 @@ void AnimationEditorApplication::SetDepthStencil()
 	dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
-	HRESULT hr = gDevice->CreateDepthStencilState(&dsDesc, gDepthStencilState.ReleaseAndGetAddressOf());
+	ThrowIfFailed(gDevice->CreateDepthStencilState(&dsDesc, gDepthStencilState.ReleaseAndGetAddressOf()));
 
 	ID3D11Texture2D* tex = nullptr;
 
-	hr = gDevice->CreateTexture2D(&depthStencilDesc, NULL, &tex);
-	hr = gDevice->CreateDepthStencilView(tex, &descDSV, gDepthStencilView.ReleaseAndGetAddressOf());
+	ThrowIfFailed(gDevice->CreateTexture2D(&depthStencilDesc, NULL, &tex));
+	ThrowIfFailed(gDevice->CreateDepthStencilView(tex, &descDSV, gDepthStencilView.ReleaseAndGetAddressOf()));
 
 
 }
