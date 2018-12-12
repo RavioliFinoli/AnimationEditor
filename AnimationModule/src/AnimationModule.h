@@ -9,44 +9,6 @@
 
 namespace Animation
 {
-	/*
-	//Flips the Z axis before writing
-	void appendFloat4AsDirectXVector(std::ofstream& file, const Vec4 vec)
-	{
-		if (!file.is_open())
-			return;
-
-		Vec4 v = vec;
-		v.z *= -1.0f;
-
-		file.write((const char*)&v, sizeof(Vec4));
-	}
-	//Flips X and Y components before writing
-	void appendFloat4AsDirectXQuaternion(std::ofstream& file, const Vec4 vec)
-	{
-		if (!file.is_open())
-			return;
-
-		Vec4 v = vec;
-		v.x *= -1.0f;
-		v.y *= -1.0f;
-
-		file.write((const char*)&v, sizeof(Vec4));
-	}
-	/// Writes each Vec4 component of the Transform (order is T, R, S)
-	void appendTransform(std::ofstream& file, const DecomposedTransform transform)
-	{
-		if (!file.is_open())
-			return;
-
-		/// Write each vector (T, R, S) (R is quaternion)
-		appendFloat4AsDirectXVector(file, transform.translation);
-		appendFloat4AsDirectXQuaternion(file, transform.rotation);
-		appendFloat4(file, transform.scale);
-	}*/
-
-
-
 #pragma region AnimatedModelClassStructs
 	// Struct containing rotation, translation and scale as XMFLOAT4A, in that order
 	struct SRT

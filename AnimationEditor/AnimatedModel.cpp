@@ -96,7 +96,7 @@ namespace AE
 	
 			///calc the actual frame index and progression towards the next frame
 			auto indexAndProgression = _computeIndexAndProgression(deltaTime, &m_MainClipData.currentTime, m_MainClipData.frameCount);
-			int prevIndex = indexAndProgression.first;
+			uint32_t prevIndex = static_cast<uint32_t>(indexAndProgression.first);
 			float progression = indexAndProgression.second;
 			///if we exceeded clips time, set back to 0 ish if we are looping, or stop if we aren't
 			if (prevIndex >= m_MainClipData.frameCount - 1) /// -1 because last frame is only used to interpolate towards

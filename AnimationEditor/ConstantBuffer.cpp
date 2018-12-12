@@ -40,7 +40,7 @@ void ConstantBuffer::_createBuffer()
 {
 	D3D11_BUFFER_DESC AnimationBufferDesc;
 	AnimationBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	AnimationBufferDesc.ByteWidth = m_size;
+	AnimationBufferDesc.ByteWidth = (UINT)m_size;
 	AnimationBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	AnimationBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	AnimationBufferDesc.MiscFlags = 0;

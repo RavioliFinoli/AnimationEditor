@@ -148,7 +148,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		HDROP hDrop;
 		hDrop = (HDROP)wParam;
 		UINT nCnt = DragQueryFile(hDrop, (UINT)-1, NULL, 0);
-		for (int nIndex = 0; nIndex < nCnt; ++nIndex)
+		for (UINT nIndex = 0; nIndex < nCnt; ++nIndex)
 		{
 			UINT nSize;
 			if (0 == (nSize = DragQueryFile(hDrop, nIndex, NULL, 0)))

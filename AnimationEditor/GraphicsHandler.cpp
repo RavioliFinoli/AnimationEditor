@@ -344,7 +344,7 @@ void AE::GraphicsHandler::_createVertexBuffer(PVOID64 vertexData, size_t vertexC
 	// what type of usage (press F1, read the docs)
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	// how big in bytes each element in the buffer is.
-	bufferDesc.ByteWidth = vertexSize * vertexCount;
+	bufferDesc.ByteWidth = (UINT)(vertexSize * vertexCount);
 
 	// this struct is created just to set a pointer to the
 	// data containing the vertices.

@@ -253,9 +253,9 @@ void AE::BakeOntoBindpose(AE::SharedDifferenceClip animation)
 	auto jointCount = skeleton->m_jointCount;
 	auto animationData = animation->GetAnimationData();
 
-	for (int skelPose = 0; skelPose < frameCount; skelPose++)
+	for (uint32_t skelPose = 0; skelPose < frameCount; skelPose++)
 	{
-		for (int joint = 0; joint < jointCount; joint++)
+		for (uint32_t joint = 0; joint < jointCount; joint++)
 		{
 			if (skelPose == 0) //get bindposes on first iteration
 			{
