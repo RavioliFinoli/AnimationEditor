@@ -415,11 +415,10 @@ namespace AE
 			for (int joint = 0; joint < layerData.clip->GetSkeleton()->m_jointCount; joint++)
 			{
 				//Animation::JointPose thisPose = rawData->m_skeletonPoses[key].m_jointPoses[joint];
-
 				//if (bakeWeight)
 				//	_weightPose(thisPose, layerData.weight);
 
-				appendAsDirectXTransform(file, rawData->m_skeletonPoses[key].m_jointPoses[joint].m_transformation);
+				appendAsRawTransform(file, rawData->m_skeletonPoses[key].m_jointPoses[joint].m_transformation);
 			}
 		}
 

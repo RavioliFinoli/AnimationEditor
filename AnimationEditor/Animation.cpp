@@ -266,7 +266,6 @@ void AE::BakeOntoBindpose(AE::SharedDifferenceClip animation)
 				}
 			}
 			
-			// #checkOrder
 			auto oldPose = _createMatrixFromSRT(animationData->m_skeletonPoses[skelPose].m_jointPoses[joint].m_transformation);
 			XMMATRIX newPoseMatrix = XMMatrixMultiply(bindPoses[joint], _createMatrixFromSRT(animationData->m_skeletonPoses[skelPose].m_jointPoses[joint].m_transformation));
 

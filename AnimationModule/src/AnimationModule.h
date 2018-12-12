@@ -71,6 +71,14 @@ namespace Animation
 		file.write((const char*)&transform.m_scale, sizeof(DirectX::XMFLOAT4A));
 
 	}
+	inline void appendAsRawTransform(std::ofstream& file, SRT transform)
+	{
+
+		file.write((const char*)&transform.m_translation, sizeof(DirectX::XMFLOAT4A));
+		file.write((const char*)&transform.m_rotationQuaternion, sizeof(DirectX::XMFLOAT4A));
+		file.write((const char*)&transform.m_scale, sizeof(DirectX::XMFLOAT4A));
+
+	}
 
 	// Struct containing a joint as XMFLOAT4X4A and a parent index as an int16_t, in that order
 	struct Joint
