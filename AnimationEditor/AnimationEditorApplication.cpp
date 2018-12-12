@@ -109,12 +109,15 @@ std::string GetPrefix(std::string input)
 
 HRESULT AnimationEditorApplication::Init(HWND hwnd)
 {
+	///Create device, context, backbuffer, swap-chain and depth-stencil
 	HRESULT hr = CreateDirect3DContext(hwnd);
 	if (hr != S_OK)
 		return hr;
 
+	///Set viewport
 	SetViewport();
 
+	///Init model handler
 	m_ModelHandler.Init();
 
 	///Init cbuffers
@@ -122,10 +125,6 @@ HRESULT AnimationEditorApplication::Init(HWND hwnd)
 	m_PerFramePSBuffer		  = std::make_unique<ConstantBuffer>(0, sizeof(PerFrameVSData));
 	m_PerStaticObjectBuffer   = std::make_unique<ConstantBuffer>(1, sizeof(PerStaticObjectData));
 	m_PerAnimatedObjectBuffer = std::make_unique<ConstantBuffer>(1, sizeof(PerAnimatedObjectData));
-
-
-
-
 
 	return hr;
 }
@@ -143,18 +142,7 @@ void AnimationEditorApplication::DoGui()
 	static std::string item_current_animation = "None selected";
 	static std::string item_current_diffAnimation = "None selected";
 		ImGui::Begin("Assets");
-		//if (ImGui::BeginCombo("Static Meshes", item_current_static, 0)) // The second parameter is the label previewed before opening the combo.
-		//{
-		//	for (int n = 0; n < gStaticMeshNames.size(); n++)
-		//	{
-		//		bool is_selected = (item_current_static == gAnimatedMeshNames[n]);
-		//		if (ImGui::Selectable(gStaticMeshNames.at(n).c_str(), is_selected))
-		//			item_current_static = gStaticMeshNames.at(n).c_str();
-		//		if (is_selected)
-		//			ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
-		//	}
-		//	ImGui::EndCombo();
-		//}
+
 		if (ImGui::BeginCombo("Animated Meshes", item_current_animated.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
 		{
 			for (int n = 0; n < gAnimatedMeshNames.size(); n++)
@@ -303,23 +291,27 @@ void AnimationEditorApplication::DoGui()
 	
 #pragma endregion "Testing 1"
 
-#pragma region "Testing 2"
+#pragma region "Playback"
+
+	///Display animation playback
 	ImGui::Begin("Playback");
 	float progress = 0.0f;
 	if (item_current_animated != "None selected")
 		progress = m_ModelHandler.GetAnimatedModel(item_current_animated)->GetProgressNormalized();
 	ImGui::ProgressBar(progress);
 	ImGui::End();
-#pragma endregion "Testing 2"
 
-#pragma region "Testing 3"
+#pragma endregion "Playback"
+
+#pragma region "Mesh Information"
+
 	if (item_current_animated != "None selected") 
 	{
 		ImGui::Begin("Animated Mesh Information");
 		std::string skeletonName = "N/A";
 		std::string mainClipName = "N/A";
 
-		//Get current model info
+		///Get current model info
 		auto info = m_ModelHandler.GetAnimatedModel(item_current_animated)->GetInformation();
 		static float scale = info.scale;
 		XMFLOAT4 pyr = info.pitchYawRoll;
@@ -327,11 +319,12 @@ void AnimationEditorApplication::DoGui()
 		pyr.y = DirectX::XMConvertToDegrees(pyr.y);
 		pyr.z = DirectX::XMConvertToDegrees(pyr.z);
 
-
+		///Update scale
 		if (ImGui::SliderFloat("Scale", &scale, 0.001f, 10.0f))
 		{
 			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetScale(scale);
 		}
+		///Update pitch
 		if (ImGui::SliderFloat("Pitch", &pyr.x, -180.0f, 180.0f))
 		{
 			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetRotation(
@@ -339,6 +332,7 @@ void AnimationEditorApplication::DoGui()
 				XMConvertToRadians(pyr.y),
 				XMConvertToRadians(pyr.z));
 		}
+		///Update yaw
 		if (ImGui::SliderFloat("Yaw", &pyr.y, -180.0f, 180.0f))
 		{
 			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetRotation(
@@ -346,6 +340,7 @@ void AnimationEditorApplication::DoGui()
 				XMConvertToRadians(pyr.y),
 				XMConvertToRadians(pyr.z));
 		}
+		///Update roll
 		if (ImGui::SliderFloat("Roll", &pyr.z, -180.0f, 180.0f))
 		{
 			m_ModelHandler.GetAnimatedModel(item_current_animated)->SetRotation(
@@ -354,6 +349,7 @@ void AnimationEditorApplication::DoGui()
 				XMConvertToRadians(pyr.z));
 		}
 
+		///Display information about current animated model
 		ImGui::BulletText("Main Animation: %s", info.mainAnimationName.c_str());
 		ImGui::BulletText("Skeleton: %s", info.skeletonName.c_str());
 		ImGui::BulletText("Frame Count: %d", info.frameCount);
@@ -362,15 +358,17 @@ void AnimationEditorApplication::DoGui()
 		ImGui::End();
 	}
 
-#pragma endregion "Testing 3"
+#pragma endregion "Mesh Information"
 
-#pragma region "Testing 4"
+#pragma region "Difference Clip Maker"
+
 	static const char* item_current_animationRef = "None selected";
 	static const char* item_current_animationSource = "None selected";
 	if (wantsNewDifferenceClip)
 	{
 		ImGui::Begin("Difference Clip Maker");
 
+		///Source clip for additive clip creation
 		if (ImGui::BeginCombo("Reference", item_current_animationRef, 0)) // The second parameter is the label previewed before opening the combo.
 		{
 			for (int n = 0; n < gAnimationClipNames.size(); n++)
@@ -386,6 +384,7 @@ void AnimationEditorApplication::DoGui()
 
 		ImGui::Separator();
 
+		///Source clip for additive clip creation
 		if (ImGui::BeginCombo("Source", item_current_animationSource, 0)) // The second parameter is the label previewed before opening the combo.
 		{
 			for (int n = 0; n < gAnimationClipNames.size(); n++)
@@ -402,21 +401,21 @@ void AnimationEditorApplication::DoGui()
 		ImGui::Separator();
 		if (ImGui::Button("Create"))
 		{
-			AE::SharedDifferenceClip clip = std::make_shared<AE::DifferenceClip>();
-			auto source = m_AnimationHandler.GetRawClip(item_current_animationSource);
-			auto reference = m_AnimationHandler.GetRawClip(item_current_animationRef);
+			if (item_current_skeleton != "None selected")
+			{
+				AE::SharedDifferenceClip clip = std::make_shared<AE::DifferenceClip>();
+				auto source = m_AnimationHandler.GetRawClip(item_current_animationSource);
+				auto reference = m_AnimationHandler.GetRawClip(item_current_animationRef);
 
-			reference 
-				? clip->SetAnimationData(MakeNewDifferenceClip(source, reference))
-				: clip->SetAnimationData(MakeNewDifferenceClip(source, m_AnimationHandler.GetSkeleton(item_current_skeleton)));
+				reference
+					///Create additive clip from reference and source
+					? clip->SetAnimationData(MakeNewDifferenceClip(source, reference))
+					///Create additive clip from bind-pose and source
+					: clip->SetAnimationData(MakeNewDifferenceClip(source, m_AnimationHandler.GetSkeleton(item_current_skeleton)));
 
-			clip->SetName(source->GetName() + "_DIFF");
-			//m_ModelHandler.GetAnimatedModel(item_current_animated)->AddAnimationLayer(clip);
-			//BakeOntoBindpose(clip);
-			m_AnimationHandler.AddDifferenceClip(clip->GetName(), clip);
-// 			if (item_current_animated != "None selected")
-// 				m_ModelHandler.GetAnimatedModel(item_current_animated)->SetMainClip(clip);
-			
+				clip->SetName(source->GetName() + "_DIFF");
+				m_AnimationHandler.AddDifferenceClip(clip->GetName(), clip);
+			}
 		}
 		ImGui::NewLine();
 
@@ -451,9 +450,9 @@ void AnimationEditorApplication::DoGui()
 		}
 		ImGui::End();
 	}
-#pragma endregion "Testing 4"
 
-	
+#pragma endregion "Difference Clip Maker"
+
 	static float weights[5] = { 1.0, 1.0, 1.0, 1.0, 1.0 };
 	if (item_current_animated != "None selected")
 	{
@@ -479,17 +478,17 @@ void AnimationEditorApplication::DoGui()
 
 		ImGui::End();
 	}
-
-
 }
+
 #pragma endregion "ImGui"
 
 void AnimationEditorApplication::Update()
 {
-	//Update gui
+	///Update GUI
 	DoGui();
+
+	///Update animated models
 	float deltaTime = ImGui::GetIO().DeltaTime;
-	//Update animated models
 	for (auto& model : m_ModelHandler.GetAnimatedModelMap())
 	{
 		model.second->Update(deltaTime);
@@ -497,82 +496,107 @@ void AnimationEditorApplication::Update()
 
 	if (gInputHandler.GetWState())
 	{
-		gCamera.MoveForward(); //#todo broken af
+		gCamera.MoveForward(); //#todo very broken
 	}
 }
 
 void AnimationEditorApplication::Render()
 {
-	///Render animated models:
-	assert(gDepthStencilView.Get() != nullptr);
-	gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), gDepthStencilView.Get());
-
-	const float clearcolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-	auto staticModels = m_ModelHandler.GetStaticModelMap();
-	auto animatedModels = m_ModelHandler.GetAnimatedModelMap();
-
-	gDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	gDeviceContext->ClearRenderTargetView(gBackbufferRTV.Get(), clearcolor);
-	gDeviceContext->ClearDepthStencilView(gDepthStencilView.Get(), D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
-
-	gDeviceContext->VSSetShader(m_ModelHandler.GetStaticModelVertexShader().Get(), nullptr, 0);
-	gDeviceContext->HSSetShader(nullptr, nullptr, 0);
-	gDeviceContext->DSSetShader(nullptr, nullptr, 0);
-	gDeviceContext->GSSetShader(nullptr, nullptr, 0);
-	gDeviceContext->PSSetShader(m_ModelHandler.GetPixelShader().Get(), nullptr, 0);
-
-	gDeviceContext->IASetInputLayout(m_ModelHandler.GetStaticModelInputLayout().Get());
-
-	PerFrameVSData pfVS = {};
-	pfVS.viewProjectionMatrix = gCamera.GetViewProjectionMatrix();
-	PerFramePSData pfPS = {};
-	pfPS.cameraPosition = gCamera.GetPosition();
-
-	m_PerFrameVSBuffer->SetData(&pfVS);
-	m_PerFramePSBuffer->SetData(&pfPS);
-	m_PerFrameVSBuffer->BindToVertexShader();
-	m_PerFramePSBuffer->BindToPixelShader();
-	UINT32 vertexSize = sizeof(float) * 11;
-	UINT32 offset = 0;
-	for (auto& model : staticModels)
+	///Set and clear old textures
 	{
-		if (model.second->GetDrawState())
+		gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), gDepthStencilView.Get());
+		const float clearcolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+		gDeviceContext->ClearRenderTargetView(gBackbufferRTV.Get(), clearcolor);
+		gDeviceContext->ClearDepthStencilView(gDepthStencilView.Get(), D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+
+	}
+
+	///Set shaders and configure input assembler for static models
+	{
+		gDeviceContext->VSSetShader(m_ModelHandler.GetStaticModelVertexShader().Get(), nullptr, 0);
+		gDeviceContext->HSSetShader(nullptr, nullptr, 0);
+		gDeviceContext->DSSetShader(nullptr, nullptr, 0);
+		gDeviceContext->GSSetShader(nullptr, nullptr, 0);
+		gDeviceContext->PSSetShader(m_ModelHandler.GetPixelShader().Get(), nullptr, 0);
+		gDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		gDeviceContext->IASetInputLayout(m_ModelHandler.GetStaticModelInputLayout().Get());
+	}
+
+	///Set per-frame buffers
+	{
+		PerFrameVSData pfVS = {};
+		pfVS.viewProjectionMatrix = gCamera.GetViewProjectionMatrix();
+		PerFramePSData pfPS = {};
+		pfPS.cameraPosition = gCamera.GetPosition();
+
+		m_PerFrameVSBuffer->SetData(&pfVS);
+		m_PerFramePSBuffer->SetData(&pfPS);
+		m_PerFrameVSBuffer->BindToVertexShader();
+		m_PerFramePSBuffer->BindToPixelShader();
+	}
+
+	///Draw static models
+	{
+		auto staticModels = m_ModelHandler.GetStaticModelMap();
+
+		UINT32 vertexSize = sizeof(float) * 11;
+		UINT32 offset = 0;
+		for (auto& model : staticModels)
 		{
-			PerStaticObjectData pso = {};
-			pso.worldMatrix = model.second->GetWorldMatrix();
-			m_PerStaticObjectBuffer->SetData(&pso);
-			m_PerStaticObjectBuffer->BindToVertexShader();
-			auto buffer = model.second->GetVertexBuffer();
-			auto vertexCount = model.second->GetVertexCount();
-	
-			gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
-			gDeviceContext->Draw(vertexCount, 0);
+			if (model.second->GetDrawState())
+			{
+				PerStaticObjectData pso = {};
+				pso.worldMatrix = model.second->GetWorldMatrix();
+				m_PerStaticObjectBuffer->SetData(&pso);
+				m_PerStaticObjectBuffer->BindToVertexShader();
+				auto buffer = model.second->GetVertexBuffer();
+				auto vertexCount = model.second->GetVertexCount();
+
+				gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
+				gDeviceContext->Draw(vertexCount, 0);
+			}
 		}
 	}
-	gDeviceContext->IASetInputLayout(m_ModelHandler.GetAnimatedModelInputLayout().Get());
-	gDeviceContext->VSSetShader(m_ModelHandler.GetAnimatedModelVertexShader().Get(), nullptr, 0);
-	vertexSize = (sizeof(float) * 15) + (sizeof(unsigned int) * 4);
-	for (auto& model : animatedModels)
+
+	///Set shaders and configure Input Assembler for animated models
 	{
-		if (model.second->GetDrawState())
+		gDeviceContext->IASetInputLayout(m_ModelHandler.GetAnimatedModelInputLayout().Get());
+		gDeviceContext->VSSetShader(m_ModelHandler.GetAnimatedModelVertexShader().Get(), nullptr, 0);
+	}
+
+	///Draw animated models
+	{
+		auto animatedModels = m_ModelHandler.GetAnimatedModelMap();
+
+		UINT32 vertexSize = (sizeof(float) * 15) + (sizeof(unsigned int) * 4);
+		UINT32 offset = 0;
+
+		for (auto& model : animatedModels)
 		{
-			PerAnimatedObjectData pao = {};
-			pao.worldMatrix = model.second->GetWorldMatrix();
-			auto skinningMatrices = model.second->GetSkinningMatrices();
-			memcpy(&pao.skinningMatrices, skinningMatrices->data(), sizeof(DirectX::XMFLOAT4X4A) * skinningMatrices->size());
-			m_PerAnimatedObjectBuffer->SetData(&pao);
-			m_PerAnimatedObjectBuffer->BindToVertexShader();
+			if (model.second->GetDrawState())
+			{
+				PerAnimatedObjectData pao = {};
+				pao.worldMatrix = model.second->GetWorldMatrix();
+				auto skinningMatrices = model.second->GetSkinningMatrices();
+				memcpy(&pao.skinningMatrices, skinningMatrices->data(), sizeof(DirectX::XMFLOAT4X4A) * skinningMatrices->size());
+				m_PerAnimatedObjectBuffer->SetData(&pao);
+				m_PerAnimatedObjectBuffer->BindToVertexShader();
 
-			auto buffer = model.second->GetVertexBuffer();
-			auto vertexCount = model.second->GetVertexCount();
+				auto buffer = model.second->GetVertexBuffer();
+				auto vertexCount = model.second->GetVertexCount();
 
-			gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
-			gDeviceContext->Draw(vertexCount, 0);
+				gDeviceContext->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &vertexSize, &offset);
+				gDeviceContext->Draw(vertexCount, 0);
+			}
 		}
 	}
-	AEApp::gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), nullptr);
-	ImGui::Render();
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+	///Render ImGui
+	{
+		AEApp::gDeviceContext->OMSetRenderTargets(1, AEApp::gBackbufferRTV.GetAddressOf(), nullptr);
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
 }
 
 void AnimationEditorApplication::Present()
@@ -582,11 +606,14 @@ void AnimationEditorApplication::Present()
 
 bool AnimationEditorApplication::LoadAssetsInDirectory(std::string dir)
 {
+	//Check for skeletons first, since the animation data format 
+	//currently does not contain information about joint count..
 	auto firstSkeletonFound = LoadSkeletonFilesInDirectory(dir);
+
 	LoadAnimationFilesInDirectory(dir, firstSkeletonFound);
 	LoadAnimatedMeshFilesInDirectory(dir);
 	LoadStaticMeshFilesInDirectory(dir);
-	return true; //#todo
+	return true;
 }
 
 AE::SharedSkeleton AnimationEditorApplication::LoadSkeletonFilesInDirectory(std::string dir)
